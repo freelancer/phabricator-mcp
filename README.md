@@ -5,17 +5,19 @@ An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that 
 ## Installation
 
 ```bash
-claude mcp add phabricator -- npx github:freelancer/phabricator-mcp
+claude mcp add --scope user phabricator -- npx github:freelancer/phabricator-mcp
 ```
 
 Or with environment variables (if not using `~/.arcrc`):
 
 ```bash
-claude mcp add phabricator \
+claude mcp add --scope user phabricator \
   -e PHABRICATOR_URL=https://phabricator.example.com \
   -e PHABRICATOR_API_TOKEN=api-xxxxx \
   -- npx github:freelancer/phabricator-mcp
 ```
+
+The `--scope user` flag installs the server globally, making it available in all projects.
 
 ## Configuration
 
