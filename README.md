@@ -109,6 +109,33 @@ You can get an API token from your Phabricator instance at: **Settings > Conduit
 | `phabricator_phid_lookup` | Look up PHIDs by name (e.g., "T123", "@username") |
 | `phabricator_phid_query` | Get details about PHIDs |
 
+## Usage
+
+Once connected, just ask your AI assistant to perform Phabricator tasks in natural language:
+
+**Tasks**
+- "Show my assigned tasks"
+- "Create a task titled 'Fix login bug' in project Backend"
+- "Add a comment to T12345 saying the fix is ready for review"
+- "Close task T12345"
+
+**Code Reviews**
+- "Show my open diffs"
+- "What's the status of D6789?"
+- "Add @alice as a reviewer to D6789"
+
+**Search & Lookup**
+- "Find user john.doe"
+- "Search for projects with 'backend' in the name"
+- "Search commits by author alice"
+- "Look up T123 and D456"
+
+**Wiki & Pastes**
+- "Find wiki pages about deployment"
+- "Create a paste with this error log"
+
+The appropriate tools are called automatically based on your request.
+
 ## Development
 
 ```bash
