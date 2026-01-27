@@ -1,7 +1,7 @@
 {
   "name": "phabricator-mcp",
   "version": "1.0.0",
-  "description": "MCP server for Phabricator Conduit API - enables Claude Code to interact with Phabricator tasks, code reviews, repositories, and more",
+  "description": "MCP server for Phabricator Conduit API - manage tasks, code reviews, repositories, and more",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -22,8 +22,6 @@
     "model-context-protocol",
     "phabricator",
     "conduit",
-    "claude",
-    "claude-code",
     "ai",
     "llm"
   ],

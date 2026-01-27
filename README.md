@@ -1,20 +1,20 @@
 # phabricator-mcp
 
-An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that wraps Phabricator's Conduit API, enabling Claude Code and other MCP clients to interact with Phabricator tasks, code reviews, repositories, and more.
+An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that wraps Phabricator's Conduit API, enabling any MCP client to interact with Phabricator tasks, code reviews, repositories, and more.
 
-## Quick Start
+## Installation
 
 ### Using npx (recommended)
 
 ```bash
-claude mcp add phabricator -- npx phabricator-mcp
+npx phabricator-mcp
 ```
 
 ### Using npm global install
 
 ```bash
 npm install -g phabricator-mcp
-claude mcp add phabricator -- phabricator-mcp
+phabricator-mcp
 ```
 
 ### From source
@@ -23,7 +23,7 @@ claude mcp add phabricator -- phabricator-mcp
 git clone https://github.com/freelancer/phabricator-mcp.git
 cd phabricator-mcp
 npm install && npm run build
-claude mcp add phabricator -- node /path/to/phabricator-mcp/dist/index.js
+node dist/index.js
 ```
 
 ## Configuration
@@ -39,7 +39,15 @@ export PHABRICATOR_API_TOKEN="api-xxxxxxxxxxxxx"
 
 You can get an API token from your Phabricator instance at: **Settings > Conduit API Tokens**
 
-### Claude Code with environment variables
+## MCP Client Configuration
+
+### Claude Code
+
+```bash
+claude mcp add phabricator -- npx phabricator-mcp
+```
+
+Or with environment variables:
 
 ```bash
 claude mcp add phabricator \
@@ -48,7 +56,7 @@ claude mcp add phabricator \
   -- npx phabricator-mcp
 ```
 
-Or edit `~/.claude/settings.json` directly:
+### Generic MCP client configuration
 
 ```json
 {
