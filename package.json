@@ -12,10 +12,11 @@
   ],
   "scripts": {
     "build": "tsc",
-    "prepublishOnly": "npm run build",
+    "prepare": "npm run build",
     "start": "node dist/index.js",
     "dev": "tsx --watch src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --import tsx 'src/**/*.test.ts'"
   },
   "keywords": [
     "mcp",
