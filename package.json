@@ -1,0 +1,52 @@
+{
+  "name": "phabricator-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Phabricator Conduit API - enables Claude Code to interact with Phabricator tasks, code reviews, repositories, and more",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "phabricator-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "start": "node dist/index.js",
+    "dev": "tsx --watch src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "phabricator",
+    "conduit",
+    "claude",
+    "claude-code",
+    "ai",
+    "llm"
+  ],
+  "author": "Laurent Goudet",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/laurentgoudet/phabricator-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/laurentgoudet/phabricator-mcp/issues"
+  },
+  "homepage": "https://github.com/laurentgoudet/phabricator-mcp#readme",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
