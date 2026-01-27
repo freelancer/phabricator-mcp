@@ -31,12 +31,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/laurentgoudet/phabricator-mcp.git"
+    "url": "git+https://github.com/freelancer/phabricator-mcp.git"
   },
   "bugs": {
-    "url": "https://github.com/laurentgoudet/phabricator-mcp/issues"
+    "url": "https://github.com/freelancer/phabricator-mcp/issues"
   },
-  "homepage": "https://github.com/laurentgoudet/phabricator-mcp#readme",
+  "homepage": "https://github.com/freelancer/phabricator-mcp#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "zod": "^3.23.0"

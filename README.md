@@ -20,7 +20,7 @@ claude mcp add phabricator -- phabricator-mcp
 ### From source
 
 ```bash
-git clone https://github.com/laurentgoudet/phabricator-mcp.git
+git clone https://github.com/freelancer/phabricator-mcp.git
 cd phabricator-mcp
 npm install && npm run build
 claude mcp add phabricator -- node /path/to/phabricator-mcp/dist/index.js
