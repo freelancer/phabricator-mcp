@@ -4,26 +4,17 @@ An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that 
 
 ## Installation
 
-### Using npx (recommended)
-
 ```bash
-npx phabricator-mcp
+claude mcp add phabricator -- npx github:freelancer/phabricator-mcp
 ```
 
-### Using npm global install
+Or with environment variables (if not using `~/.arcrc`):
 
 ```bash
-npm install -g phabricator-mcp
-phabricator-mcp
-```
-
-### From source
-
-```bash
-git clone https://github.com/freelancer/phabricator-mcp.git
-cd phabricator-mcp
-npm install && npm run build
-node dist/index.js
+claude mcp add phabricator \
+  -e PHABRICATOR_URL=https://phabricator.example.com \
+  -e PHABRICATOR_API_TOKEN=api-xxxxx \
+  -- npx github:freelancer/phabricator-mcp
 ```
 
 ## Configuration
@@ -32,29 +23,10 @@ The server automatically reads configuration from `~/.arcrc` (created by [Arcani
 
 Alternatively, set environment variables (which take precedence over `.arcrc`):
 
-```bash
-export PHABRICATOR_URL="https://phabricator.example.com"
-export PHABRICATOR_API_TOKEN="api-xxxxxxxxxxxxx"
-```
+- `PHABRICATOR_URL` - Phabricator instance URL
+- `PHABRICATOR_API_TOKEN` - Conduit API token
 
 You can get an API token from your Phabricator instance at: **Settings > Conduit API Tokens**
-
-## MCP Client Configuration
-
-### Claude Code
-
-```bash
-claude mcp add phabricator -- npx phabricator-mcp
-```
-
-Or with environment variables:
-
-```bash
-claude mcp add phabricator \
-  -e PHABRICATOR_URL=https://phabricator.example.com \
-  -e PHABRICATOR_API_TOKEN=api-xxxxx \
-  -- npx phabricator-mcp
-```
 
 ### Generic MCP client configuration
 
@@ -63,7 +35,7 @@ claude mcp add phabricator \
   "mcpServers": {
     "phabricator": {
       "command": "npx",
-      "args": ["phabricator-mcp"],
+      "args": ["github:freelancer/phabricator-mcp"],
       "env": {
         "PHABRICATOR_URL": "https://phabricator.example.com",
         "PHABRICATOR_API_TOKEN": "api-xxxxxxxxxxxxx"
@@ -135,56 +107,22 @@ claude mcp add phabricator \
 | `phabricator_phid_lookup` | Look up PHIDs by name (e.g., "T123", "@username") |
 | `phabricator_phid_query` | Get details about PHIDs |
 
-## Examples
-
-### Search for open tasks assigned to you
-
-```
-Use phabricator_task_search with queryKey "assigned"
-```
-
-### Create a new task
-
-```
-Use phabricator_task_create with:
-- title: "Fix login bug"
-- description: "Users can't log in on mobile"
-- priority: "high"
-```
-
-### Find a user's PHID
-
-```
-Use phabricator_phid_lookup with names: ["@username"]
-```
-
-### Search tasks in a project
-
-First get the project PHID:
-```
-Use phabricator_project_search with constraints.name: "My Project"
-```
-
-Then search tasks:
-```
-Use phabricator_task_search with constraints.projectPHIDs: ["PHID-PROJ-xxx"]
-```
-
 ## Development
 
 ```bash
-# Install dependencies
+git clone https://github.com/freelancer/phabricator-mcp.git
+cd phabricator-mcp
 npm install
-
-# Build
 npm run build
-
-# Type check
-npm run typecheck
-
-# Watch mode
-npm run dev
+npm run dev  # watch mode
 ```
+
+### Architecture
+
+- `src/index.ts` - Entry point, MCP server with stdio transport
+- `src/config.ts` - Config loader (reads `~/.arcrc` or env vars)
+- `src/client/conduit.ts` - Phabricator Conduit API client
+- `src/tools/*.ts` - Tool implementations per Phabricator application
 
 ## License
 
