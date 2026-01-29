@@ -4,6 +4,8 @@ An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that 
 
 ## Installation
 
+### Claude Code (CLI)
+
 ```bash
 claude mcp add --scope user phabricator -- npx github:freelancer/phabricator-mcp
 ```
@@ -19,18 +21,28 @@ claude mcp add --scope user phabricator \
 
 The `--scope user` flag installs the server globally, making it available in all projects.
 
-## Configuration
+### VS Code with Claude Extension
 
-The server automatically reads configuration from `~/.arcrc` (created by [Arcanist](https://secure.phabricator.com/book/phabricator/article/arcanist/)). No additional configuration is needed if you've already set up `arc`.
+Add to your VS Code `settings.json`:
 
-Alternatively, set environment variables (which take precedence over `.arcrc`):
+```json
+{
+  "claude.mcpServers": {
+    "phabricator": {
+      "command": "npx",
+      "args": ["github:freelancer/phabricator-mcp"],
+      "env": {
+        "PHABRICATOR_URL": "https://phabricator.example.com",
+        "PHABRICATOR_API_TOKEN": "api-xxxxxxxxxxxxx"
+      }
+    }
+  }
+}
+```
 
-- `PHABRICATOR_URL` - Phabricator instance URL
-- `PHABRICATOR_API_TOKEN` - Conduit API token
+### Cursor
 
-You can get an API token from your Phabricator instance at: **Settings > Conduit API Tokens**
-
-### Generic MCP client configuration
+Add to your Cursor MCP config (`~/.cursor/mcp.json`):
 
 ```json
 {
@@ -46,6 +58,36 @@ You can get an API token from your Phabricator instance at: **Settings > Conduit
   }
 }
 ```
+
+### GitHub Copilot (VS Code)
+
+Add to your VS Code `settings.json`:
+
+```json
+{
+  "github.copilot.chat.mcp.servers": {
+    "phabricator": {
+      "command": "npx",
+      "args": ["github:freelancer/phabricator-mcp"],
+      "env": {
+        "PHABRICATOR_URL": "https://phabricator.example.com",
+        "PHABRICATOR_API_TOKEN": "api-xxxxxxxxxxxxx"
+      }
+    }
+  }
+}
+```
+
+## Configuration
+
+The server automatically reads configuration from `~/.arcrc` (created by [Arcanist](https://secure.phabricator.com/book/phabricator/article/arcanist/)). No additional configuration is needed if you've already set up `arc`.
+
+Alternatively, set environment variables (which take precedence over `.arcrc`):
+
+- `PHABRICATOR_URL` - Phabricator instance URL
+- `PHABRICATOR_API_TOKEN` - Conduit API token
+
+You can get an API token from your Phabricator instance at: **Settings > Conduit API Tokens**
 
 ## Available Tools
 
