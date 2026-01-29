@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>phabricator-mcp - MCP Server for Phabricator</title>
+  <meta name="description" content="An MCP server that connects AI assistants to Phabricator for task management, code reviews, and more.">
+  <style>
+    :root {
+      --bg: #0d1117;
+      --bg-secondary: #161b22;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --accent-hover: #79b8ff;
+      --border: #30363d;
+      --code-bg: #1c2128;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    header {
+      text-align: center;
+      padding: 3rem 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 3rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .tagline {
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .badges {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      padding: 0.25rem 0.75rem;
+      border-radius: 2rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      margin: 2.5rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      margin: 1.5rem 0 0.75rem;
+      color: var(--text);
+    }
+
+    p {
+      margin-bottom: 1rem;
+      color: var(--text-muted);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: var(--accent-hover);
+      text-decoration: underline;
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+
+    code {
+      font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-size: 0.9rem;
+    }
+
+    :not(pre) > code {
+      background: var(--code-bg);
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+    }
+
+    .install-grid {
+      display: grid;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .install-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+    }
+
+    .install-card h3 {
+      margin: 0 0 0.75rem;
+      font-size: 1rem;
+    }
+
+    .install-card pre {
+      margin: 0;
+      font-size: 0.85rem;
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .tool-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    .tool-card h4 {
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .tool-card ul {
+      list-style: none;
+      font-size: 0.85rem;
+    }
+
+    .tool-card li {
+      color: var(--text-muted);
+      padding: 0.25rem 0;
+    }
+
+    .tool-card code {
+      color: var(--accent);
+      background: none;
+      padding: 0;
+    }
+
+    .examples {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .examples h3 {
+      margin: 0 0 1rem;
+    }
+
+    .example-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+
+    .example-list div h4 {
+      font-size: 0.85rem;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    .example-list ul {
+      list-style: none;
+      font-size: 0.9rem;
+    }
+
+    .example-list li {
+      color: var(--text-muted);
+      padding: 0.2rem 0;
+    }
+
+    .example-list li::before {
+      content: '"';
+      color: var(--accent);
+    }
+
+    .example-list li::after {
+      content: '"';
+      color: var(--accent);
+    }
+
+    footer {
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    footer a {
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 2rem; }
+      .tagline { font-size: 1rem; }
+      .container { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>phabricator-mcp</h1>
+      <p class="tagline">Connect your AI assistant to Phabricator</p>
+      <div class="badges">
+        <span class="badge">MCP Server</span>
+        <span class="badge">Phabricator</span>
+        <span class="badge">TypeScript</span>
+        <span class="badge">MIT License</span>
+      </div>
+    </header>
+
+    <main>
+      <p>An <a href="https://modelcontextprotocol.io/">MCP (Model Context Protocol)</a> server that wraps Phabricator's Conduit API, enabling AI assistants to interact with tasks, code reviews, repositories, and more.</p>
+
+      <h2>Quick Start</h2>
+
+      <div class="install-grid">
+        <div class="install-card">
+          <h3>Claude Code (CLI)</h3>
+          <pre><code>claude mcp add --scope user phabricator -- npx github:freelancer/phabricator-mcp</code></pre>
+        </div>
+
+        <div class="install-card">
+          <h3>VS Code with Claude Extension</h3>
+          <pre><code>{
+  "claude.mcpServers": {
+    "phabricator": {
+      "command": "npx",
+      "args": ["github:freelancer/phabricator-mcp"]
+    }
+  }
+}</code></pre>
+        </div>
+
+        <div class="install-card">
+          <h3>Cursor</h3>
+          <p style="margin-bottom: 0.5rem; font-size: 0.85rem;">Add to <code>~/.cursor/mcp.json</code>:</p>
+          <pre><code>{
+  "mcpServers": {
+    "phabricator": {
+      "command": "npx",
+      "args": ["github:freelancer/phabricator-mcp"]
+    }
+  }
+}</code></pre>
+        </div>
+
+        <div class="install-card">
+          <h3>GitHub Copilot</h3>
+          <pre><code>{
+  "github.copilot.chat.mcp.servers": {
+    "phabricator": {
+      "command": "npx",
+      "args": ["github:freelancer/phabricator-mcp"]
+    }
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <h2>Configuration</h2>
+      <p>The server automatically reads credentials from <code>~/.arcrc</code> if you've set up <a href="https://secure.phabricator.com/book/phabricator/article/arcanist/">Arcanist</a>.</p>
+      <p>Alternatively, set environment variables:</p>
+      <pre><code>PHABRICATOR_URL=https://phabricator.example.com
+PHABRICATOR_API_TOKEN=api-xxxxx</code></pre>
+      <p>Get an API token from your Phabricator instance at <strong>Settings &gt; Conduit API Tokens</strong>.</p>
+
+      <h2>Available Tools</h2>
+
+      <div class="tools-grid">
+        <div class="tool-card">
+          <h4>Tasks (Maniphest)</h4>
+          <ul>
+            <li><code>task_search</code> - Search tasks</li>
+            <li><code>task_create</code> - Create tasks</li>
+            <li><code>task_edit</code> - Edit tasks</li>
+            <li><code>task_add_comment</code> - Comment on tasks</li>
+          </ul>
+        </div>
+
+        <div class="tool-card">
+          <h4>Code Reviews (Differential)</h4>
+          <ul>
+            <li><code>revision_search</code> - Search revisions</li>
+            <li><code>revision_edit</code> - Edit revisions</li>
+            <li><code>diff_search</code> - Search diffs</li>
+          </ul>
+        </div>
+
+        <div class="tool-card">
+          <h4>Repositories (Diffusion)</h4>
+          <ul>
+            <li><code>repository_search</code> - Search repos</li>
+            <li><code>commit_search</code> - Search commits</li>
+          </ul>
+        </div>
+
+        <div class="tool-card">
+          <h4>Users &amp; Projects</h4>
+          <ul>
+            <li><code>user_whoami</code> - Current user</li>
+            <li><code>user_search</code> - Search users</li>
+            <li><code>project_search</code> - Search projects</li>
+            <li><code>project_edit</code> - Edit projects</li>
+          </ul>
+        </div>
+
+        <div class="tool-card">
+          <h4>Wiki &amp; Pastes</h4>
+          <ul>
+            <li><code>document_search</code> - Search wiki</li>
+            <li><code>document_edit</code> - Edit wiki pages</li>
+            <li><code>paste_search</code> - Search pastes</li>
+            <li><code>paste_create</code> - Create pastes</li>
+          </ul>
+        </div>
+
+        <div class="tool-card">
+          <h4>Utilities</h4>
+          <ul>
+            <li><code>phid_lookup</code> - Look up T123, @user</li>
+            <li><code>phid_query</code> - Get PHID details</li>
+            <li><code>column_search</code> - Workboard columns</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2>Usage</h2>
+
+      <div class="examples">
+        <h3>Just ask in natural language</h3>
+        <div class="example-list">
+          <div>
+            <h4>Tasks</h4>
+            <ul>
+              <li>Show my assigned tasks</li>
+              <li>Create a task for the login bug</li>
+              <li>Close T12345</li>
+            </ul>
+          </div>
+          <div>
+            <h4>Code Reviews</h4>
+            <ul>
+              <li>Show my open diffs</li>
+              <li>Add @alice as reviewer to D6789</li>
+              <li>What's the status of D1234?</li>
+            </ul>
+          </div>
+          <div>
+            <h4>Search</h4>
+            <ul>
+              <li>Find user john.doe</li>
+              <li>Search commits by alice</li>
+              <li>Look up T123 and D456</li>
+            </ul>
+          </div>
+          <div>
+            <h4>Wiki</h4>
+            <ul>
+              <li>Find docs about deployment</li>
+              <li>Create a paste with this log</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <p>
+        <a href="https://github.com/freelancer/phabricator-mcp">GitHub</a> &middot;
+        MIT License
+      </p>
+    </footer>
+  </div>
+</body>
+</html>
