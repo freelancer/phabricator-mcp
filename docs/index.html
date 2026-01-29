@@ -267,6 +267,34 @@
         </div>
 
         <div class="install-card">
+          <h3>Codex (OpenAI CLI)</h3>
+          <p style="margin-bottom: 0.5rem; font-size: 0.85rem;">Add to <code>~/.codex/config.json</code>:</p>
+          <pre><code>{
+  "mcpServers": {
+    "phabricator": {
+      "command": "npx",
+      "args": ["github:freelancer/phabricator-mcp"]
+    }
+  }
+}</code></pre>
+        </div>
+
+        <div class="install-card">
+          <h3>opencode</h3>
+          <p style="margin-bottom: 0.5rem; font-size: 0.85rem;">Add to <code>~/.config/opencode/config.json</code>:</p>
+          <pre><code>{
+  "mcp": {
+    "servers": {
+      "phabricator": {
+        "command": "npx",
+        "args": ["github:freelancer/phabricator-mcp"]
+      }
+    }
+  }
+}</code></pre>
+        </div>
+
+        <div class="install-card">
           <h3>VS Code with Claude Extension</h3>
           <pre><code>{
   "claude.mcpServers": {

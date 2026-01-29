@@ -21,6 +21,46 @@ claude mcp add --scope user phabricator \
 
 The `--scope user` flag installs the server globally, making it available in all projects.
 
+### Codex (OpenAI CLI)
+
+Add to your Codex config (`~/.codex/config.json`):
+
+```json
+{
+  "mcpServers": {
+    "phabricator": {
+      "command": "npx",
+      "args": ["github:freelancer/phabricator-mcp"],
+      "env": {
+        "PHABRICATOR_URL": "https://phabricator.example.com",
+        "PHABRICATOR_API_TOKEN": "api-xxxxxxxxxxxxx"
+      }
+    }
+  }
+}
+```
+
+### opencode
+
+Add to your opencode config (`~/.config/opencode/config.json`):
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "phabricator": {
+        "command": "npx",
+        "args": ["github:freelancer/phabricator-mcp"],
+        "env": {
+          "PHABRICATOR_URL": "https://phabricator.example.com",
+          "PHABRICATOR_API_TOKEN": "api-xxxxxxxxxxxxx"
+        }
+      }
+    }
+  }
+}
+```
+
 ### VS Code with Claude Extension
 
 Add to your VS Code `settings.json`:
