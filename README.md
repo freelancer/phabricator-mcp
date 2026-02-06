@@ -268,6 +268,10 @@ npm run dev  # watch mode
 - `src/client/conduit.ts` - Phabricator Conduit API client
 - `src/tools/*.ts` - Tool implementations per Phabricator application
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=freelancer/phabricator-mcp&type=Date)](https://star-history.com/#freelancer/phabricator-mcp&Date)
+
 ## License
 
 MIT
