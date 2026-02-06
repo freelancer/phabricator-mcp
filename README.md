@@ -2,6 +2,8 @@
 
 An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that wraps Phabricator's Conduit API, enabling any MCP client to interact with Phabricator tasks, code reviews, repositories, and more.
 
+## Star History
+
 [![Star History Chart](https://api.star-history.com/svg?repos=freelancer/phabricator-mcp&type=Date)](https://star-history.com/#freelancer/phabricator-mcp&Date)
 
 ## Installation
