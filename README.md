@@ -155,6 +155,8 @@ Add to your `~/.claude/settings.json`:
       "mcp__phabricator__phabricator_column_search",
       "mcp__phabricator__phabricator_paste_search",
       "mcp__phabricator__phabricator_document_search",
+      "mcp__phabricator__phabricator_blog_search",
+      "mcp__phabricator__phabricator_blog_post_search",
       "mcp__phabricator__phabricator_phid_lookup",
       "mcp__phabricator__phabricator_phid_query"
     ]
@@ -220,6 +222,16 @@ To allowlist all tools including write operations, use `"mcp__phabricator__*"` i
 | `phabricator_document_search` | Search wiki documents |
 | `phabricator_document_edit` | Edit a wiki document |
 
+### Blogs (Phame)
+
+| Tool | Description |
+|------|-------------|
+| `phabricator_blog_search` | Search Phame blogs |
+| `phabricator_blog_post_search` | Search blog posts |
+| `phabricator_blog_post_create` | Create a new blog post |
+| `phabricator_blog_post_edit` | Edit an existing blog post |
+| `phabricator_blog_post_add_comment` | Add a comment to a blog post |
+
 ### PHID Utilities
 
 | Tool | Description |
@@ -252,6 +264,12 @@ Once connected, just ask your AI assistant to perform Phabricator tasks in natur
 **Wiki & Pastes**
 - "Find wiki pages about deployment"
 - "Create a paste with this error log"
+
+**Blogs**
+- "Search for blog posts about release notes"
+- "Create a new draft blog post titled 'Q1 Update' on the engineering blog"
+- "Publish blog post J42"
+- "Add a comment to blog post J15"
 
 The appropriate tools are called automatically based on your request.
 
