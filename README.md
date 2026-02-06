@@ -129,9 +129,9 @@ Alternatively, set environment variables (which take precedence over `.arcrc`):
 
 You can get an API token from your Phabricator instance at: **Settings > Conduit API Tokens**
 
-### Recommended: Allow Tool Permissions
+### Recommended: Allow Read-Only Tool Permissions
 
-By default, Claude Code will prompt you for permission each time a Phabricator tool is called. Since all Phabricator tools are read/write operations on your Phabricator instance (not your local machine), it's recommended to allowlist them.
+By default, Claude Code will prompt you for permission each time a Phabricator tool is called. It's recommended to allowlist the read-only tools so they run without prompts, while keeping write operations (create, edit, comment) behind a confirmation step.
 
 Add to your `~/.claude/settings.json`:
 
@@ -139,25 +139,26 @@ Add to your `~/.claude/settings.json`:
 {
   "permissions": {
     "allow": [
-      "mcp__phabricator__*"
-    ]
-  }
-}
-```
-
-This allows all Phabricator MCP tools to run without prompts. You can also allowlist specific tools only:
-
-```json
-{
-  "permissions": {
-    "allow": [
+      "mcp__phabricator__phabricator_task_search",
       "mcp__phabricator__phabricator_revision_search",
       "mcp__phabricator__phabricator_diff_search",
-      "mcp__phabricator__phabricator_get_raw_diff"
+      "mcp__phabricator__phabricator_get_raw_diff",
+      "mcp__phabricator__phabricator_repository_search",
+      "mcp__phabricator__phabricator_commit_search",
+      "mcp__phabricator__phabricator_user_whoami",
+      "mcp__phabricator__phabricator_user_search",
+      "mcp__phabricator__phabricator_project_search",
+      "mcp__phabricator__phabricator_column_search",
+      "mcp__phabricator__phabricator_paste_search",
+      "mcp__phabricator__phabricator_document_search",
+      "mcp__phabricator__phabricator_phid_lookup",
+      "mcp__phabricator__phabricator_phid_query"
     ]
   }
 }
 ```
+
+To allowlist all tools including write operations, use `"mcp__phabricator__*"` instead.
 
 ## Available Tools
 
