@@ -87,6 +87,21 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
     },
   );
 
+  // Get raw diff content
+  server.tool(
+    'phabricator_get_raw_diff',
+    'Get the raw diff/patch content for a Differential diff by diff ID. Use phabricator_diff_search to find the diff ID from a revision PHID first.',
+    {
+      diffID: z.number().describe('The diff ID (numeric, e.g., 1392561). Use phabricator_diff_search to find this from a revision.'),
+    },
+    async (params) => {
+      const result = await client.call<string>('differential.getrawdiff', {
+        diffID: params.diffID,
+      });
+      return { content: [{ type: 'text', text: result }] };
+    },
+  );
+
   // Search diffs
   server.tool(
     'phabricator_diff_search',
