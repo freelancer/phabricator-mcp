@@ -146,6 +146,7 @@ You can get an API token from your Phabricator instance at: **Settings > Conduit
 |------|-------------|
 | `phabricator_revision_search` | Search code review revisions |
 | `phabricator_revision_edit` | Edit a revision (add reviewers, comment, etc.) |
+| `phabricator_get_raw_diff` | Get the raw diff/patch content for a diff by ID |
 | `phabricator_diff_search` | Search diffs |
 
 ### Repositories (Diffusion)
@@ -204,6 +205,7 @@ Once connected, just ask your AI assistant to perform Phabricator tasks in natur
 **Code Reviews**
 - "Show my open diffs"
 - "What's the status of D6789?"
+- "Review the code changes in D6789"
 - "Add @alice as a reviewer to D6789"
 
 **Search & Lookup**
