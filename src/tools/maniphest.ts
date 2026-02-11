@@ -157,4 +157,47 @@ export function registerManiphestTools(server: McpServer, client: ConduitClient)
       return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
     },
   );
+
+  // Get comments from task
+  server.tool(
+    'phabricator_task_get_comments',
+    'Fetch comments and transactions from a Maniphest task using transaction.search',
+    {
+      objectIdentifier: z.string().describe('Task PHID or ID (e.g., "T123")'),
+      limit: z.number().max(100).optional().describe('Maximum number of transactions to return (default: 100)'),
+    },
+    async (params) => {
+      // Resolve object identifier to PHID if needed
+      let objectPHID: string;
+      if (params.objectIdentifier.startsWith('PHID-')) {
+        objectPHID = params.objectIdentifier;
+      } else {
+        const lookupResult = await client.call<Record<string, { phid: string }>>('phid.lookup', {
+          names: [params.objectIdentifier],
+        });
+        const resolved = lookupResult[params.objectIdentifier];
+        if (!resolved) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(
+                  { error: `Could not resolve object identifier: ${params.objectIdentifier}` },
+                  null,
+                  2,
+                ),
+              },
+            ],
+          };
+        }
+        objectPHID = resolved.phid;
+      }
+
+      const result = await client.call('transaction.search', {
+        objectIdentifier: objectPHID,
+        limit: params.limit || 100,
+      });
+      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+    },
+  );
 }

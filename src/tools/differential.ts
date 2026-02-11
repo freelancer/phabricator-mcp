@@ -123,4 +123,47 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
       return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
     },
   );
+
+  // Get comments from revision
+  server.tool(
+    'phabricator_revision_get_comments',
+    'Fetch comments and transactions from a Differential revision using transaction.search',
+    {
+      objectIdentifier: z.string().describe('Revision PHID or ID (e.g., "D456")'),
+      limit: z.number().max(100).optional().describe('Maximum number of transactions to return (default: 100)'),
+    },
+    async (params) => {
+      // Resolve object identifier to PHID if needed
+      let objectPHID: string;
+      if (params.objectIdentifier.startsWith('PHID-')) {
+        objectPHID = params.objectIdentifier;
+      } else {
+        const lookupResult = await client.call<Record<string, { phid: string }>>('phid.lookup', {
+          names: [params.objectIdentifier],
+        });
+        const resolved = lookupResult[params.objectIdentifier];
+        if (!resolved) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(
+                  { error: `Could not resolve object identifier: ${params.objectIdentifier}` },
+                  null,
+                  2,
+                ),
+              },
+            ],
+          };
+        }
+        objectPHID = resolved.phid;
+      }
+
+      const result = await client.call('transaction.search', {
+        objectIdentifier: objectPHID,
+        limit: params.limit || 100,
+      });
+      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+    },
+  );
 }
