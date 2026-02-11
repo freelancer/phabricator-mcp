@@ -158,7 +158,9 @@ Add to your `~/.claude/settings.json`:
       "mcp__phabricator__phabricator_blog_search",
       "mcp__phabricator__phabricator_blog_post_search",
       "mcp__phabricator__phabricator_phid_lookup",
-      "mcp__phabricator__phabricator_phid_query"
+      "mcp__phabricator__phabricator_phid_query",
+      "mcp__phabricator__phabricator_task_get_comments",
+      "mcp__phabricator__phabricator_revision_get_comments"
     ]
   }
 }
@@ -176,6 +178,7 @@ To allowlist all tools including write operations, use `"mcp__phabricator__*"` i
 | `phabricator_task_create` | Create a new task |
 | `phabricator_task_edit` | Edit an existing task |
 | `phabricator_task_add_comment` | Add a comment to a task |
+| `phabricator_task_get_comments` | Fetch comments and transactions from a Maniphest task using transaction.search |
 
 ### Code Reviews (Differential)
 
@@ -183,6 +186,7 @@ To allowlist all tools including write operations, use `"mcp__phabricator__*"` i
 |------|-------------|
 | `phabricator_revision_search` | Search code review revisions |
 | `phabricator_revision_edit` | Edit a revision (add reviewers, comment, etc.) |
+| `phabricator_revision_get_comments` | Fetch comments and transactions from a Differential revision using transaction.search |
 | `phabricator_get_raw_diff` | Get the raw diff/patch content for a diff by ID |
 | `phabricator_diff_search` | Search diffs |
 
@@ -248,12 +252,14 @@ Once connected, just ask your AI assistant to perform Phabricator tasks in natur
 - "Create a task titled 'Fix login bug' in project Backend"
 - "Add a comment to T12345 saying the fix is ready for review"
 - "Close task T12345"
+- "Get comments from T304007"
 
 **Code Reviews**
 - "Show my open diffs"
 - "What's the status of D6789?"
 - "Review the code changes in D6789"
 - "Add @alice as a reviewer to D6789"
+- "Get comments from D215801"
 
 **Search & Lookup**
 - "Find user john.doe"
