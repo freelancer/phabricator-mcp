@@ -15,6 +15,7 @@ export function registerProjectTools(server: McpServer, client: ConduitClient) {
         phids: z.array(z.string()).optional().describe('Project PHIDs'),
         slugs: z.array(z.string()).optional().describe('Project slugs'),
         name: z.string().optional().describe('Name substring search'),
+        status: z.enum(['active', 'archived', 'all']).optional().describe('Project status: "active", "archived", or "all"'),
         members: z.array(z.string()).optional().describe('Member user PHIDs'),
         watchers: z.array(z.string()).optional().describe('Watcher user PHIDs'),
         ancestors: z.array(z.string()).optional().describe('Ancestor project PHIDs'),
