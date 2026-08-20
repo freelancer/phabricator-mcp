@@ -372,7 +372,7 @@ export function registerManiphestTools(server: McpServer, client: ConduitClient)
         transactions.push({ type: 'points', value: params.points });
       }
       if (params.columnPHID !== undefined) {
-        transactions.push({ type: 'column', value: [{ columnPHID: params.columnPHID }] });
+        transactions.push({ type: 'column', value: [params.columnPHID] });
       }
       if (params.space !== undefined) {
         transactions.push({ type: 'space', value: params.space });
