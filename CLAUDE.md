@@ -23,6 +23,8 @@ npm test            # tsx --test
 
 Tests use `node:test` and live next to the code as `src/**/*.test.ts`.
 
+Before opening a pull request, check the change against a Phabricator as `CONTRIBUTING.md` describes: unit tests cannot see a method, parameter or transaction type that the instance does not accept.
+
 ## Documentation Rules
 
 **When adding, removing, or modifying tools, always update ALL of these:**

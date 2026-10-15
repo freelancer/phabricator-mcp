@@ -425,8 +425,11 @@ git clone https://github.com/freelancer/phabricator-mcp.git
 cd phabricator-mcp
 npm install
 npm run build
+npm test
 npm run dev  # watch mode
 ```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to check a change against a real Phabricator before opening a pull request.
 
 ### Architecture
 
