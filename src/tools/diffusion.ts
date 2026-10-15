@@ -3,6 +3,8 @@ import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
 import { jsonResult } from './result.js';
+import { decodeText, DEFAULT_BYTE_LIMIT, hasBinaryExtension, INVALID_UTF8_NOTE, isTextMimeType, sliceLines } from './file-text.js';
+import { FileContentCache, isCommitHash } from './file-cache.js';
 
 export function registerDiffusionTools(server: McpServer, client: ConduitClient) {
   // Search repositories
@@ -95,34 +97,53 @@ export function registerDiffusionTools(server: McpServer, client: ConduitClient)
   );
 
   // Read file content from repository
+  const fileCache = new FileContentCache<TextContent>();
+  const reading = new Map<string, Promise<FileContent | TooBig>>();
   server.tool(
     'phabricator_repository_file_content',
-    'Read file contents from a Diffusion repository at a given path and commit/branch. Returns the file content as a base64-encoded blob. If the file is too large, returns tooHuge: true with no content.',
+    "Read a file's text at a path and commit/branch. Long files are paged: follow the closing note or set startLine/lineCount. A branch or other ref is resolved to a commit, which the note names so later pages read the same version. Binary files return metadata; files over byteLimit return tooHuge.",
     {
       path: z.string().describe('File path in the repository (e.g., "src/index.ts")'),
       repository: z.string().optional().describe('Repository callsign, short name, or PHID'),
       commit: z.string().describe('Commit hash or branch name'),
       branch: z.string().optional().describe('Branch name'),
       timeout: z.coerce.number().optional().describe('Query timeout in seconds'),
-      byteLimit: z.coerce.number().optional().describe('Maximum file size in bytes to return'),
+      byteLimit: z.coerce.number().int().min(1).optional().describe(`Max file size in bytes (default ${DEFAULT_BYTE_LIMIT})`),
+      startLine: z.coerce.number().int().min(1).optional().describe('First line, 1-based'),
+      startColumn: z.coerce.number().int().min(1).optional().describe('Where to start in startLine, 1-based, in UTF-16 code units, as a previous note gives it'),
+      lineCount: z.coerce.number().int().min(1).optional().describe('Lines to return'),
     },
     async (params) => {
-      const result = await client.call<{ filePHID: string; tooHuge: boolean; tooSlow: boolean }>('diffusion.filecontentquery', {
-        path: params.path,
-        repository: params.repository,
-        commit: params.commit,
-        branch: params.branch,
-        timeout: params.timeout,
-        byteLimit: params.byteLimit,
-      });
-      if (result.tooHuge || result.tooSlow) {
-        return jsonResult(result);
+      const byteLimit = params.byteLimit ?? DEFAULT_BYTE_LIMIT;
+      const commit = await resolveCommit(client, params);
+      const key = commit === undefined ? undefined : JSON.stringify([params.repository, commit, params.path]);
+      let file: FileContent | TooBig | undefined = key === undefined ? undefined : fileCache.get(key);
+      if (file === undefined || file.byteSize > byteLimit) {
+        const readKey = JSON.stringify([key ?? null, byteLimit]);
+        let read = key === undefined ? undefined : reading.get(readKey);
+        if (read === undefined) {
+          read = readFile(client, { ...params, commit: commit ?? params.commit, byteLimit });
+          if (key !== undefined) {
+            reading.set(readKey, read);
+            void read.finally(() => reading.delete(readKey)).catch(() => {});
+          }
+        }
+        file = await read;
+        if (key !== undefined && 'text' in file) {
+          fileCache.set(key, file, file.text.length);
+        }
       }
-      // Fetch actual file content using the returned filePHID
-      const fileInfo = await client.call<{ name: string; dataURI: string; byteSize: string; mimeType: string }>('file.info', {
-        phid: result.filePHID,
-      });
-      return jsonResult({ ...result, ...fileInfo });
+      if (!('text' in file)) {
+        return jsonResult(file);
+      }
+      const readOnCommit = commit !== undefined && commit !== params.commit ? commit : undefined;
+      const slice = sliceLines(file.text, { ...params, readOnCommit });
+      const notes = [slice.note, file.valid ? undefined : INVALID_UTF8_NOTE].filter((note) => note !== undefined);
+      const content = [{ type: 'text' as const, text: slice.text }];
+      if (notes.length > 0) {
+        content.push({ type: 'text' as const, text: notes.join(' ') });
+      }
+      return { content };
     },
   );
 
@@ -280,4 +301,75 @@ export function registerDiffusionTools(server: McpServer, client: ConduitClient)
       return jsonResult(result);
     },
   );
+}
+
+type TextContent = { binary: false; text: string; valid: boolean; byteSize: number };
+type FileContent = TextContent | { binary: true; mimeType: string; byteSize: number; filePHID: string };
+type TooBig = { tooHuge: boolean; tooSlow: boolean; byteSize?: undefined };
+
+/**
+ * The full hash `commit` names, so that every page of a read is the same
+ * version; undefined when Diffusion does not resolve it to exactly one commit.
+ */
+async function resolveCommit(
+  client: ConduitClient,
+  params: { repository?: string; commit: string; branch?: string },
+): Promise<string | undefined> {
+  if (isCommitHash(params.commit)) {
+    return params.commit.toLowerCase();
+  }
+  if (params.repository === undefined) {
+    return undefined;
+  }
+  const refs = await client.call<Record<string, Array<{ identifier: string }>> | []>('diffusion.resolverefs', {
+    repository: params.repository,
+    refs: [params.commit],
+    branch: params.branch,
+  });
+  const matches = Array.isArray(refs) ? [] : refs[params.commit] ?? [];
+  const hashes = new Set(matches.map((match) => match.identifier).filter(isCommitHash));
+  return hashes.size === 1 ? [...hashes][0] : undefined;
+}
+
+async function readFile(
+  client: ConduitClient,
+  params: { path: string; repository?: string; commit: string; branch?: string; timeout?: number; byteLimit: number },
+): Promise<FileContent | TooBig> {
+  const result = await client.call<{ filePHID: string; tooHuge: boolean; tooSlow: boolean }>('diffusion.filecontentquery', {
+    path: params.path,
+    repository: params.repository,
+    commit: params.commit,
+    branch: params.branch,
+    timeout: params.timeout,
+    byteLimit: params.byteLimit,
+  });
+  if (result.tooHuge || result.tooSlow) {
+    return { tooHuge: result.tooHuge, tooSlow: result.tooSlow };
+  }
+  return readFileContent(client, result.filePHID, params.path);
+}
+
+/**
+ * Read a file that diffusion.filecontentquery stored. file.download returns its
+ * bytes (file.info has metadata and a URI that needs a web session). A file
+ * named like a binary is checked with file.info first, so an image is not
+ * downloaded only to find a NUL byte in it.
+ */
+async function readFileContent(client: ConduitClient, filePHID: string, path: string): Promise<FileContent> {
+  const binaryInfo = async () => {
+    const info = await client.call<{ mimeType: string; byteSize: string | number }>('file.info', { phid: filePHID });
+    return { binary: true as const, mimeType: info.mimeType, byteSize: Number(info.byteSize), filePHID };
+  };
+  if (hasBinaryExtension(path)) {
+    const info = await binaryInfo();
+    if (!isTextMimeType(info.mimeType)) {
+      return info;
+    }
+  }
+  const bytes = Buffer.from(await client.call<string>('file.download', { phid: filePHID }), 'base64');
+  const decoded = decodeText(bytes);
+  if (decoded === null) {
+    return binaryInfo();
+  }
+  return { binary: false, ...decoded, byteSize: bytes.length };
 }

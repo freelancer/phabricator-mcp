@@ -252,7 +252,7 @@ The `phabricator_revision_inline_*` tools call the `differential.inline.*` Condu
 | `phabricator_repository_search` | Search repositories |
 | `phabricator_commit_search` | Search commits |
 | `phabricator_repository_browse` | Browse a repository directory tree |
-| `phabricator_repository_file_content` | Read file contents from a repository |
+| `phabricator_repository_file_content` | Read a file's text from a repository, whole or by line range |
 | `phabricator_branch_search` | List branches in a repository |
 | `phabricator_tag_search` | List tags in a repository |
 | `phabricator_repository_file_history` | Get commit history for a file path |
