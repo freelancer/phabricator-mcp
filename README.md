@@ -176,6 +176,7 @@ Add to your `~/.claude/settings.json`:
       "mcp__phabricator__phabricator_diff_search",
       "mcp__phabricator__phabricator_diff_raw",
       "mcp__phabricator__phabricator_revision_paths",
+      "mcp__phabricator__phabricator_revision_inline_search",
       "mcp__phabricator__phabricator_repository_search",
       "mcp__phabricator__phabricator_commit_search",
       "mcp__phabricator__phabricator_repository_browse",
@@ -234,10 +235,15 @@ To allowlist all tools including write operations, use `"mcp__phabricator__*"` i
 |------|-------------|
 | `phabricator_revision_search` | Search code review revisions |
 | `phabricator_revision_edit` | Edit a revision (accept, reject, abandon, add reviewers, comment, etc.) |
-| `phabricator_revision_inline_comment` | Create an inline comment on a specific line of a diff |
+| `phabricator_revision_inline_comment` | Create a draft inline comment on a line or character range, optionally with a suggested edit |
+| `phabricator_revision_inline_search` | List a revision's inline comments with side, range, suggested edit and Done state |
+| `phabricator_revision_inline_publish` | Publish your draft inline comments as one review, like "Submit" in the web UI |
+| `phabricator_revision_inline_done` | Check or uncheck "Done" on an inline comment |
 | `phabricator_diff_raw` | Get the raw diff/patch content for a diff by ID |
 | `phabricator_diff_search` | Search diffs (code change snapshots within a revision) |
 | `phabricator_revision_paths` | Get the list of changed file paths for a revision |
+
+The `phabricator_revision_inline_*` tools call the `differential.inline.*` Conduit methods, which stock Phabricator does not ship. Without them, `phabricator_revision_inline_comment` still creates plain line comments through `differential.createinline`, but those drafts cannot be published through Conduit.
 
 ### Repositories (Diffusion)
 
@@ -383,6 +389,8 @@ Once connected, just ask your AI assistant to perform Phabricator tasks in natur
 - "Add @alice as a reviewer to D6789"
 - "Accept D6789"
 - "Leave an inline comment on line 42 of src/index.ts in D6789"
+- "Suggest an edit for lines 10-12 of src/config.ts in D6789, then publish my review"
+- "Address the unresolved inline comments on D6789"
 
 **Repositories & Builds**
 - "Show me the contents of src/config.ts in repo Backend"

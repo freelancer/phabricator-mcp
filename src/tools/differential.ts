@@ -1,7 +1,12 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { ConduitClient } from '../client/conduit.js';
+import { ConduitError, type ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
+
+const revisionID = z.preprocess(
+  (val) => (typeof val === 'string' ? val.replace(/^D/i, '') : val),
+  z.coerce.number(),
+);
 
 export function registerDifferentialTools(server: McpServer, client: ConduitClient) {
   // Search revisions
@@ -202,26 +207,95 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
   // Create inline comment on a diff
   server.tool(
     'phabricator_revision_inline_comment',
-    'Create an inline comment on a specific line of a Differential diff. The comment will appear as a draft — publish it by calling phabricator_revision_edit with a comment on the same revision.',
+    'Create a draft inline comment on a Differential diff, optionally highlighting a character range and attaching a suggested edit. Drafts are visible only to you until you call phabricator_revision_inline_publish; a plain comment via phabricator_revision_edit does NOT publish them. Ranges and suggestions need the differential.inline.* Conduit extension; without it, plain line comments fall back to differential.createinline.',
     {
-      revisionID: z.coerce.number().describe('Numeric revision ID (e.g., 123). Do not include the "D" prefix.'),
-      diffID: z.coerce.number().describe('Diff ID to comment on. Use phabricator_diff_search to find this.'),
+      revisionID: revisionID.describe('Revision ID (e.g., 123 or "D123")'),
+      diffID: z.coerce.number().optional().describe('Diff ID to comment on. Defaults to the revision\'s active diff.'),
       filePath: z.string().describe('Path to the file being commented on'),
-      lineNumber: z.coerce.number().describe('Line number in the file'),
-      lineLength: z.coerce.number().optional().describe('Number of lines the comment spans (default: 0 for single line)'),
+      lineNumber: z.coerce.number().describe('First line of the comment'),
+      lineLength: z.coerce.number().optional().describe('How many more lines the comment spans after lineNumber (default: 0, a single line)'),
       content: z.string().describe('Comment text (supports Remarkup)'),
       isNewFile: z.boolean().optional().describe('Whether the line number refers to the new file (true) or old file (false). Default: true'),
+      startOffset: z.coerce.number().optional().describe('0-based column on the first line where the highlighted range starts, counted as the web UI shows it (each tab is up to 2 columns). Requires endOffset.'),
+      endOffset: z.coerce.number().optional().describe('Exclusive column on the last line where the highlighted range ends. Requires startOffset.'),
+      suggestionText: z.string().optional().describe('Suggested replacement for the commented lines on the new side. "" suggests deleting them. Needs a diff uploaded with full context, as arc diff does.'),
     },
     async (params) => {
-      const result = await client.call('differential.createinline', {
+      const base = {
         revisionID: params.revisionID,
         diffID: params.diffID,
         filePath: params.filePath,
         lineNumber: params.lineNumber,
         lineLength: params.lineLength ?? 0,
         content: params.content,
-        isNewFile: (params.isNewFile ?? true) ? 1 : 0,
-      });
+        isNewFile: params.isNewFile ?? true,
+      };
+      const extended = params.startOffset !== undefined
+        || params.endOffset !== undefined
+        || params.suggestionText !== undefined;
+
+      let result: unknown;
+      try {
+        result = await client.call('differential.inline.create', {
+          ...base,
+          startOffset: params.startOffset,
+          endOffset: params.endOffset,
+          suggestionText: params.suggestionText,
+        });
+      } catch (error) {
+        if (extended || !(error instanceof ConduitError) || error.code !== 'ERR-CONDUIT-CALL') {
+          throw error;
+        }
+        result = await client.call('differential.createinline', {
+          ...base,
+          isNewFile: base.isNewFile ? 1 : 0,
+        });
+      }
+      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+    },
+  );
+
+  // Search inline comments
+  server.tool(
+    'phabricator_revision_inline_search',
+    'List inline comments on a Differential revision with their side (isNewFile), line range, character range, suggested edit and Done state. Returns every published comment plus your own drafts, newest first. Needs the differential.inline.* Conduit extension.',
+    {
+      revisionID: revisionID.describe('Revision ID (e.g., 123 or "D123")'),
+      limit: z.coerce.number().max(100).optional().describe('Maximum results (max 100)'),
+      after: z.string().optional().describe('Cursor for next-page pagination'),
+      before: z.string().optional().describe('Cursor for previous-page pagination'),
+    },
+    async (params) => {
+      const result = await client.call('differential.inline.search', params);
+      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+    },
+  );
+
+  // Publish draft inline comments
+  server.tool(
+    'phabricator_revision_inline_publish',
+    'Publish your draft inline comments on a Differential revision, with an optional top-level comment, as one review: the same as pressing "Submit" in the web UI. Also publishes pending "Done" changes you made as the revision author. Without inlineIDs, EVERY draft you have on the revision is published, including ones started in a browser. Needs "Can Edit" on the revision and the differential.inline.* Conduit extension. If a call times out, search before retrying: naming an already-published inline fails.',
+    {
+      revisionID: revisionID.describe('Revision ID (e.g., 123 or "D123")'),
+      inlineIDs: z.array(z.coerce.number()).optional().describe('Publish only these draft inline IDs. Omit to publish all your drafts on the revision.'),
+      message: z.string().optional().describe('Top-level review comment (supports Remarkup)'),
+    },
+    async (params) => {
+      const result = await client.call('differential.inline.publish', params);
+      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+    },
+  );
+
+  // Check or uncheck Done on an inline comment
+  server.tool(
+    'phabricator_revision_inline_done',
+    'Check or uncheck "Done" on a Differential inline comment. Allowed for the revision author, or for the comment author while it is still a draft. A check by the revision author stays pending (isDonePending) until they next publish, e.g. with phabricator_revision_inline_publish. Needs the differential.inline.* Conduit extension.',
+    {
+      inlineID: z.coerce.number().describe('Inline comment ID (the "id" from phabricator_revision_inline_search)'),
+      isDone: z.boolean().describe('true to mark Done, false to clear it'),
+    },
+    async (params) => {
+      const result = await client.call('differential.inline.setdone', params);
       return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
     },
   );
