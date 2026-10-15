@@ -344,7 +344,7 @@ The `phabricator_revision_inline_*` tools call the `differential.inline.*` Condu
 
 | Tool | Description |
 |------|-------------|
-| `phabricator_conpherence_create` | Create a new chat room/thread |
+| `phabricator_conpherence_create` | Create a new chat room/thread, with you as a participant |
 | `phabricator_conpherence_edit` | Edit a chat room (rename, manage participants) |
 | `phabricator_conpherence_read` | Read messages from a chat thread |
 | `phabricator_conpherence_send` | Send a message to a chat thread |

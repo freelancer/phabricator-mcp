@@ -30,31 +30,40 @@ export function registerConpherenceTools(server: McpServer, client: ConduitClien
   // Create a new thread
   server.tool(
     'phabricator_conpherence_create',
-    'Create a new Conpherence chat room/thread',
+    'Create a Conpherence room; you are always a participant.',
     {
       title: z.string().describe('Thread title'),
       topic: z.string().optional().describe('Room topic/description'),
       message: z.string().optional().describe('Initial message (supports Remarkup)'),
-      participantPHIDs: z.array(z.string()).optional().describe('Participant user PHIDs to add'),
+      participantPHIDs: z.array(z.string()).optional().describe('Other participants\' PHIDs'),
     },
     ADDITIVE,
     async (params) => {
+      // Phabricator rejects a message in the call that creates the room.
+      const viewer = await client.call<{ phid: string }>('user.whoami');
+      const participants = [...new Set([viewer.phid, ...(params.participantPHIDs ?? [])])];
       const transactions: Array<{ type: string; value: unknown }> = [
         { type: 'name', value: params.title },
       ];
-
       if (params.topic !== undefined) {
         transactions.push({ type: 'topic', value: params.topic });
       }
-      if (params.message !== undefined) {
-        transactions.push({ type: 'comment', value: params.message });
-      }
-      if (params.participantPHIDs !== undefined) {
-        transactions.push({ type: 'participants.add', value: params.participantPHIDs });
-      }
+      transactions.push({ type: 'participants.add', value: participants });
 
-      const result = await client.call('conpherence.edit', { transactions });
-      return jsonResult(result);
+      const result = await client.call<{ object: { phid: string } }>('conpherence.edit', { transactions });
+      if (params.message === undefined) {
+        return jsonResult(result);
+      }
+      try {
+        const message = await client.call('conpherence.edit', {
+          objectIdentifier: result.object.phid,
+          transactions: [{ type: 'comment', value: params.message }],
+        });
+        return jsonResult({ ...result, message });
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error);
+        throw new Error(`Created room ${result.object.phid}, but posting the message failed: ${reason}`);
+      }
     },
   );
 
