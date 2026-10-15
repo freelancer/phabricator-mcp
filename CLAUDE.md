@@ -25,13 +25,14 @@ Tests use `node:test` and live next to the code as `src/**/*.test.ts`.
 
 ## Documentation Rules
 
-**When adding, removing, or modifying tools, always update ALL THREE of these:**
+**When adding, removing, or modifying tools, always update ALL of these:**
 
 1. **`README.md`** - Tool table, permissions allow list, usage examples
-2. **`docs/index.html`** - Tool count (in og:description, JSON-LD, h2 heading, FAQ), tool grid, permissions allow list
+2. **`docs/index.html`** - Tool grid, permissions allow list
 3. **`src/tools/index.ts`** - Tool registration (if adding a new tool file)
+4. **`src/tools/availability.ts`** - The Conduit methods the tool calls, so it is hidden on instances without them
 
-The site (`docs/index.html`) is a single static HTML file served via GitHub Pages. It contains tool counts in multiple places (meta tags, JSON-LD structured data, heading, FAQ) - update all of them when the tool count changes.
+The site (`docs/index.html`) is a single static HTML file served via GitHub Pages. Neither it nor the README gives a tool count: which tools an instance gets depends on the Conduit methods it offers.
 
 ## Patterns
 

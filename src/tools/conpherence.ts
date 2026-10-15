@@ -1,35 +1,10 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
-import { jsonCoerce } from './coerce.js';
 import { jsonResult } from './result.js';
 import { ADDITIVE, DESTRUCTIVE, READ_ONLY } from './annotations.js';
 
 export function registerConpherenceTools(server: McpServer, client: ConduitClient) {
-  // Search chat rooms
-  server.tool(
-    'phabricator_conpherence_search',
-    'Search Conpherence chat rooms/threads',
-    {
-      queryKey: z.string().optional().describe('Built-in query: "all", "participant"'),
-      constraints: jsonCoerce(z.object({
-        ids: z.array(z.coerce.number()).optional().describe('Room IDs'),
-        phids: z.array(z.string()).optional().describe('Room PHIDs'),
-        participants: z.array(z.string()).optional().describe('Participant user PHIDs'),
-        fulltext: z.string().optional().describe('Search for rooms containing these words'),
-      })).optional().describe('Search constraints'),
-      order: z.string().optional().describe('Result order'),
-      limit: z.coerce.number().max(100).optional().describe('Maximum results (max 100)'),
-      after: z.string().optional().describe('Cursor for next-page pagination'),
-      before: z.string().optional().describe('Cursor for previous-page pagination'),
-    },
-    READ_ONLY,
-    async (params) => {
-      const result = await client.call('conpherence.search', params);
-      return jsonResult(result);
-    },
-  );
-
   // Read messages in a thread
   server.tool(
     'phabricator_conpherence_read',

@@ -202,7 +202,6 @@ Add to your `~/.claude/settings.json`:
       "mcp__phabricator__phabricator_build_plan_search",
       "mcp__phabricator__phabricator_owners_search",
       "mcp__phabricator__phabricator_feed_query",
-      "mcp__phabricator__phabricator_conpherence_search",
       "mcp__phabricator__phabricator_conpherence_read",
       "mcp__phabricator__phabricator_audit_query",
       "mcp__phabricator__phabricator_phid_lookup",
@@ -217,6 +216,8 @@ Add to your `~/.claude/settings.json`:
 To allowlist all tools including write operations, use `"mcp__phabricator__*"` instead.
 
 ## Available Tools
+
+The server hides tools that Phabricator cannot serve, such as the Conpherence tools when Conpherence is not installed. It learns which Conduit methods the instance offers from `conduit.query` and caches the list in `~/.cache/phabricator-mcp/`, so later starts don't wait for Phabricator. Each start refreshes the cache in the background, and if the list has changed, for example after an upgrade, the server tells the client its tool list changed. On the first start the server waits up to 5 seconds for the list; if it gets no answer, every tool is listed.
 
 ### Task Management (Maniphest)
 
@@ -343,7 +344,6 @@ The `phabricator_revision_inline_*` tools call the `differential.inline.*` Condu
 
 | Tool | Description |
 |------|-------------|
-| `phabricator_conpherence_search` | Search chat rooms/threads |
 | `phabricator_conpherence_create` | Create a new chat room/thread |
 | `phabricator_conpherence_edit` | Edit a chat room (rename, manage participants) |
 | `phabricator_conpherence_read` | Read messages from a chat thread |

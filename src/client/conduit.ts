@@ -25,7 +25,11 @@ export class ConduitClient {
     this.apiToken = config.apiToken;
   }
 
-  async call<T = unknown>(method: string, params: Record<string, unknown> = {}): Promise<T> {
+  async call<T = unknown>(
+    method: string,
+    params: Record<string, unknown> = {},
+    options: { signal?: AbortSignal } = {},
+  ): Promise<T> {
     const url = `${this.baseUrl}/api/${method}`;
 
     const body = new URLSearchParams();
@@ -42,6 +46,7 @@ export class ConduitClient {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: body.toString(),
+      signal: options.signal,
     });
 
     if (!response.ok) {

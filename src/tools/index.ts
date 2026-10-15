@@ -1,4 +1,4 @@
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { McpServer, RegisteredTool } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ConduitClient } from '../client/conduit.js';
 import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
@@ -20,12 +20,20 @@ import { registerFeedTools } from './feed.js';
 import { registerConpherenceTools } from './conpherence.js';
 import { registerAuditTools } from './audit.js';
 import { READ_ONLY } from './annotations.js';
+import { recordTools } from './availability.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(join(__dirname, '..', '..', 'package.json'), 'utf-8'));
 
-export function registerAllTools(server: McpServer, client: ConduitClient) {
-  server.tool(
+/**
+ * Registers every tool and returns them by name, so the ones the instance
+ * cannot serve can be hidden (see hideUnavailableTools).
+ */
+export function registerAllTools(server: McpServer, client: ConduitClient): Map<string, RegisteredTool> {
+  const registered = new Map<string, RegisteredTool>();
+  const tools = recordTools(server, registered);
+
+  tools.tool(
     'phabricator_version',
     'Get the version of the running phabricator-mcp server',
     {},
@@ -35,20 +43,21 @@ export function registerAllTools(server: McpServer, client: ConduitClient) {
     }),
   );
 
-  registerManiphestTools(server, client);
-  registerDifferentialTools(server, client);
-  registerDiffusionTools(server, client);
-  registerUserTools(server, client);
-  registerProjectTools(server, client);
-  registerPasteTools(server, client);
-  registerPhrictionTools(server, client);
-  registerPhidTools(server, client);
-  registerPhameTools(server, client);
-  registerTransactionTools(server, client);
-  registerFileTools(server, client);
-  registerHarbormasterTools(server, client);
-  registerOwnersTools(server, client);
-  registerFeedTools(server, client);
-  registerConpherenceTools(server, client);
-  registerAuditTools(server, client);
+  registerManiphestTools(tools, client);
+  registerDifferentialTools(tools, client);
+  registerDiffusionTools(tools, client);
+  registerUserTools(tools, client);
+  registerProjectTools(tools, client);
+  registerPasteTools(tools, client);
+  registerPhrictionTools(tools, client);
+  registerPhidTools(tools, client);
+  registerPhameTools(tools, client);
+  registerTransactionTools(tools, client);
+  registerFileTools(tools, client);
+  registerHarbormasterTools(tools, client);
+  registerOwnersTools(tools, client);
+  registerFeedTools(tools, client);
+  registerConpherenceTools(tools, client);
+  registerAuditTools(tools, client);
+  return registered;
 }

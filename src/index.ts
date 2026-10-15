@@ -7,6 +7,7 @@ import { dirname, join } from 'path';
 import { loadConfig } from './config.js';
 import { ConduitClient } from './client/conduit.js';
 import { registerAllTools } from './tools/index.js';
+import { hideUnavailableTools, methodCachePath } from './tools/availability.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
@@ -22,10 +23,12 @@ async function main() {
     },
     {
       instructions: 'Results omit null and empty fields; a missing field has no value. Paged results: pass cursor.after as "after" until it is null.',
+      debouncedNotificationMethods: ['notifications/tools/list_changed'],
     },
   );
 
-  registerAllTools(server, client);
+  const tools = registerAllTools(server, client);
+  await hideUnavailableTools(tools, client, methodCachePath(config));
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
