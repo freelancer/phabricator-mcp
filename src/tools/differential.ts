@@ -2,6 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { ConduitError, type ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
+import { jsonResult } from './result.js';
 
 const revisionID = z.preprocess(
   (val) => (typeof val === 'string' ? val.replace(/^D/i, '') : val),
@@ -43,7 +44,7 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
     },
     async (params) => {
       const result = await client.call('differential.revision.search', params);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -145,7 +146,7 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
         objectIdentifier: params.objectIdentifier,
         transactions,
       });
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -185,7 +186,7 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
     },
     async (params) => {
       const result = await client.call('differential.diff.search', params);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -200,7 +201,7 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
       const result = await client.call('differential.getcommitpaths', {
         revision_id: params.revision_id,
       });
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -251,7 +252,7 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
           isNewFile: base.isNewFile ? 1 : 0,
         });
       }
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -267,7 +268,7 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
     },
     async (params) => {
       const result = await client.call('differential.inline.search', params);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -282,7 +283,7 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
     },
     async (params) => {
       const result = await client.call('differential.inline.publish', params);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -296,7 +297,7 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
     },
     async (params) => {
       const result = await client.call('differential.inline.setdone', params);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 }

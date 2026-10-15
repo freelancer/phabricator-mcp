@@ -2,6 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
+import { jsonResult } from './result.js';
 
 export function registerProjectTools(server: McpServer, client: ConduitClient) {
   // Search projects
@@ -41,7 +42,7 @@ export function registerProjectTools(server: McpServer, client: ConduitClient) {
     },
     async (params) => {
       const result = await client.call('project.search', params);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -105,7 +106,7 @@ export function registerProjectTools(server: McpServer, client: ConduitClient) {
         apiParams.objectIdentifier = params.objectIdentifier;
       }
       const result = await client.call('project.edit', apiParams);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -127,7 +128,7 @@ export function registerProjectTools(server: McpServer, client: ConduitClient) {
     },
     async (params) => {
       const result = await client.call('project.column.search', params);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 }

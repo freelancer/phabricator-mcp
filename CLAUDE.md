@@ -18,9 +18,10 @@ MCP server wrapping Phabricator's Conduit API. TypeScript, Zod schemas, `@modelc
 npm run build      # tsc
 npm run typecheck   # tsc --noEmit
 npm run dev         # tsx --watch
+npm test            # tsx --test
 ```
 
-No test runner configured. Tests exist in `src/**/*.test.ts` using `node:test` but there is no `npm test` script.
+Tests use `node:test` and live next to the code as `src/**/*.test.ts`.
 
 ## Documentation Rules
 
@@ -38,4 +39,4 @@ The site (`docs/index.html`) is a single static HTML file served via GitHub Page
 - Edit tools use transactions: `{ type: string, value: unknown }[]` passed to `*.edit` Conduit methods
 - Use `jsonCoerce()` wrapper on object/record Zod schemas (handles JSON string inputs from some MCP clients)
 - Tool names are prefixed with `phabricator_`
-- Return format: `{ content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] }`
+- Return format: `jsonResult(result)` from `src/tools/result.ts` (compact JSON, null/empty properties dropped)

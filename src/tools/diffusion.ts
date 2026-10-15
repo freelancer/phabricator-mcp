@@ -2,6 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
+import { jsonResult } from './result.js';
 
 export function registerDiffusionTools(server: McpServer, client: ConduitClient) {
   // Search repositories
@@ -33,7 +34,7 @@ export function registerDiffusionTools(server: McpServer, client: ConduitClient)
     },
     async (params) => {
       const result = await client.call('diffusion.repository.search', params);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -71,7 +72,7 @@ export function registerDiffusionTools(server: McpServer, client: ConduitClient)
     },
     async (params) => {
       const result = await client.call('diffusion.commit.search', params);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -89,7 +90,7 @@ export function registerDiffusionTools(server: McpServer, client: ConduitClient)
     },
     async (params) => {
       const result = await client.call('diffusion.browsequery', params);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -115,13 +116,13 @@ export function registerDiffusionTools(server: McpServer, client: ConduitClient)
         byteLimit: params.byteLimit,
       });
       if (result.tooHuge || result.tooSlow) {
-        return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+        return jsonResult(result);
       }
       // Fetch actual file content using the returned filePHID
       const fileInfo = await client.call<{ name: string; dataURI: string; byteSize: string; mimeType: string }>('file.info', {
         phid: result.filePHID,
       });
-      return { content: [{ type: 'text', text: JSON.stringify({ ...result, ...fileInfo }, null, 2) }] };
+      return jsonResult({ ...result, ...fileInfo });
     },
   );
 
@@ -140,7 +141,7 @@ export function registerDiffusionTools(server: McpServer, client: ConduitClient)
     },
     async (params) => {
       const result = await client.call('diffusion.branchquery', params);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -159,7 +160,7 @@ export function registerDiffusionTools(server: McpServer, client: ConduitClient)
     },
     async (params) => {
       const result = await client.call('diffusion.tagsquery', params);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -184,7 +185,7 @@ export function registerDiffusionTools(server: McpServer, client: ConduitClient)
         offset: params.offset ?? 0,
         limit: params.limit ?? 100,
       });
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -211,7 +212,7 @@ export function registerDiffusionTools(server: McpServer, client: ConduitClient)
         limit: params.limit,
         offset: params.offset,
       });
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -276,7 +277,7 @@ export function registerDiffusionTools(server: McpServer, client: ConduitClient)
       }
 
       const result = await client.call('diffusion.repository.edit', apiParams);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 }

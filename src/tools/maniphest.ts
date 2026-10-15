@@ -2,6 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
+import { jsonResult } from './result.js';
 
 /**
  * Resolve revision identifiers (e.g. "D223125", "PHID-DREV-xxx") to PHIDs.
@@ -182,10 +183,11 @@ export function registerManiphestTools(server: McpServer, client: ConduitClient)
       limit: z.coerce.number().max(100).optional().describe('Maximum results (max 100)'),
       after: z.string().optional().describe('Cursor for next-page pagination'),
       before: z.string().optional().describe('Cursor for previous-page pagination'),
+      includeEmptyCustomFields: z.boolean().optional().describe('Also return custom fields that have no value, as null, to see every custom field key a task can take'),
     },
-    async (params) => {
+    async ({ includeEmptyCustomFields, ...params }) => {
       const result = await client.call('maniphest.search', params);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result, { keepEmptyCustomFields: includeEmptyCustomFields });
     },
   );
 
@@ -210,7 +212,7 @@ export function registerManiphestTools(server: McpServer, client: ConduitClient)
       space: z.string().optional().describe('Space PHID to place the task in (for multi-space installations)'),
       comment: z.string().optional().describe('Initial comment on the task (supports Remarkup)'),
       customFields: jsonCoerce(z.record(z.string(), z.unknown())).optional().describe(
-        'Custom field transactions. Keys are transaction types (e.g. "custom.my-field"), values are the field values. Check your Phabricator Conduit console (conduit/method/maniphest.edit/) for available fields.'
+        'Custom field transactions. Keys are transaction types (e.g. "custom.my-field"), values are the field values. phabricator_task_search with includeEmptyCustomFields: true lists every key.'
       ),
     },
     async (params) => {
@@ -281,7 +283,7 @@ export function registerManiphestTools(server: McpServer, client: ConduitClient)
       }
 
       const output = Object.keys(extras).length > 0 ? { ...result, ...extras } : result;
-      return { content: [{ type: 'text', text: JSON.stringify(output, null, 2) }] };
+      return jsonResult(output);
     },
   );
 
@@ -314,7 +316,7 @@ export function registerManiphestTools(server: McpServer, client: ConduitClient)
       space: z.string().optional().describe('Space PHID to move the task to (for multi-space installations)'),
       comment: z.string().optional().describe('Add a comment alongside the edit (supports Remarkup)'),
       customFields: jsonCoerce(z.record(z.string(), z.unknown())).optional().describe(
-        'Custom field transactions. Keys are transaction types (e.g. "custom.my-field"), values are the field values. Check your Phabricator Conduit console (conduit/method/maniphest.edit/) for available fields.'
+        'Custom field transactions. Keys are transaction types (e.g. "custom.my-field"), values are the field values. phabricator_task_search with includeEmptyCustomFields: true lists every key.'
       ),
     },
     async (params) => {
@@ -424,7 +426,7 @@ export function registerManiphestTools(server: McpServer, client: ConduitClient)
         ? { ...(result !== undefined ? { task: result } : {}), ...extras }
         : result;
 
-      return { content: [{ type: 'text', text: JSON.stringify(output, null, 2) }] };
+      return jsonResult(output);
     },
   );
 
@@ -441,7 +443,7 @@ export function registerManiphestTools(server: McpServer, client: ConduitClient)
         objectIdentifier: params.objectIdentifier,
         transactions: [{ type: 'comment', value: params.comment }],
       });
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -452,7 +454,7 @@ export function registerManiphestTools(server: McpServer, client: ConduitClient)
     {},
     async () => {
       const result = await client.call('maniphest.status.search');
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -463,7 +465,7 @@ export function registerManiphestTools(server: McpServer, client: ConduitClient)
     {},
     async () => {
       const result = await client.call('maniphest.priority.search');
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 

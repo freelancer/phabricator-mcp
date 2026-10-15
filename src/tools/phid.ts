@@ -1,6 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
+import { jsonResult } from './result.js';
 
 export function registerPhidTools(server: McpServer, client: ConduitClient) {
   // Lookup PHIDs by name
@@ -12,7 +13,7 @@ export function registerPhidTools(server: McpServer, client: ConduitClient) {
     },
     async (params) => {
       const result = await client.call('phid.lookup', { names: params.names });
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -25,7 +26,7 @@ export function registerPhidTools(server: McpServer, client: ConduitClient) {
     },
     async (params) => {
       const result = await client.call('phid.query', { phids: params.phids });
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 }

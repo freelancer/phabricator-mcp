@@ -1,6 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
+import { jsonResult } from './result.js';
 
 export function registerFeedTools(server: McpServer, client: ConduitClient) {
   // Query activity feed
@@ -16,7 +17,7 @@ export function registerFeedTools(server: McpServer, client: ConduitClient) {
     },
     async (params) => {
       const result = await client.call('feed.query', params);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 }

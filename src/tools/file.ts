@@ -2,6 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
+import { jsonResult } from './result.js';
 
 export function registerFileTools(server: McpServer, client: ConduitClient) {
   // Upload a file
@@ -58,7 +59,7 @@ export function registerFileTools(server: McpServer, client: ConduitClient) {
     },
     async (params) => {
       const result = await client.call('file.search', params);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -72,7 +73,7 @@ export function registerFileTools(server: McpServer, client: ConduitClient) {
     },
     async (params) => {
       const result = await client.call('file.info', params);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 }

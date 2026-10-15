@@ -2,6 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
+import { jsonResult } from './result.js';
 
 export function registerConpherenceTools(server: McpServer, client: ConduitClient) {
   // Search chat rooms
@@ -23,7 +24,7 @@ export function registerConpherenceTools(server: McpServer, client: ConduitClien
     },
     async (params) => {
       const result = await client.call('conpherence.search', params);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -44,7 +45,7 @@ export function registerConpherenceTools(server: McpServer, client: ConduitClien
         limit: params.limit,
         offset: params.offset,
       });
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -74,7 +75,7 @@ export function registerConpherenceTools(server: McpServer, client: ConduitClien
       }
 
       const result = await client.call('conpherence.edit', { transactions });
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -117,7 +118,7 @@ export function registerConpherenceTools(server: McpServer, client: ConduitClien
         objectIdentifier: params.objectIdentifier,
         transactions,
       });
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -134,7 +135,7 @@ export function registerConpherenceTools(server: McpServer, client: ConduitClien
         objectIdentifier: params.objectIdentifier,
         transactions: [{ type: 'comment', value: params.message }],
       });
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 }

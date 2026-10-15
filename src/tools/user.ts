@@ -2,6 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
+import { jsonResult } from './result.js';
 
 export function registerUserTools(server: McpServer, client: ConduitClient) {
   // Get current user
@@ -11,7 +12,7 @@ export function registerUserTools(server: McpServer, client: ConduitClient) {
     {},
     async () => {
       const result = await client.call('user.whoami');
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -46,7 +47,7 @@ export function registerUserTools(server: McpServer, client: ConduitClient) {
     },
     async (params) => {
       const result = await client.call('user.search', params);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 }

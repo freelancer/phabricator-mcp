@@ -15,10 +15,15 @@ async function main() {
   const config = loadConfig();
   const client = new ConduitClient(config);
 
-  const server = new McpServer({
-    name: 'phabricator',
-    version: pkg.version,
-  });
+  const server = new McpServer(
+    {
+      name: 'phabricator',
+      version: pkg.version,
+    },
+    {
+      instructions: 'Results omit null and empty fields; a missing field has no value. Paged results: pass cursor.after as "after" until it is null.',
+    },
+  );
 
   registerAllTools(server, client);
 

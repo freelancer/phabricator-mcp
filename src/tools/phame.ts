@@ -2,6 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
+import { jsonResult } from './result.js';
 
 export function registerPhameTools(server: McpServer, client: ConduitClient) {
   // Search blogs
@@ -28,7 +29,7 @@ export function registerPhameTools(server: McpServer, client: ConduitClient) {
     },
     async (params) => {
       const result = await client.call('phame.blog.search', params);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -88,7 +89,7 @@ export function registerPhameTools(server: McpServer, client: ConduitClient) {
         apiParams.objectIdentifier = params.objectIdentifier;
       }
       const result = await client.call('phame.blog.edit', apiParams);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -118,7 +119,7 @@ export function registerPhameTools(server: McpServer, client: ConduitClient) {
     },
     async (params) => {
       const result = await client.call('phame.post.search', params);
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -151,7 +152,7 @@ export function registerPhameTools(server: McpServer, client: ConduitClient) {
       }
 
       const result = await client.call('phame.post.edit', { transactions });
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -206,7 +207,7 @@ export function registerPhameTools(server: McpServer, client: ConduitClient) {
         objectIdentifier: params.objectIdentifier,
         transactions,
       });
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 
@@ -223,7 +224,7 @@ export function registerPhameTools(server: McpServer, client: ConduitClient) {
         objectIdentifier: params.objectIdentifier,
         transactions: [{ type: 'comment', value: params.comment }],
       });
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return jsonResult(result);
     },
   );
 }
