@@ -2,6 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonResult } from './result.js';
+import { READ_ONLY } from './annotations.js';
 
 export function registerAuditTools(server: McpServer, client: ConduitClient) {
   // Query audits
@@ -15,6 +16,7 @@ export function registerAuditTools(server: McpServer, client: ConduitClient) {
       limit: z.coerce.number().max(100).optional().describe('Maximum results (max 100)'),
       offset: z.coerce.number().optional().describe('Result offset for pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('audit.query', params);
       return jsonResult(result);

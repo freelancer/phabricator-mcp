@@ -3,6 +3,7 @@ import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
 import { jsonResult } from './result.js';
+import { ADDITIVE, DESTRUCTIVE, READ_ONLY } from './annotations.js';
 
 export function registerPhameTools(server: McpServer, client: ConduitClient) {
   // Search blogs
@@ -27,6 +28,7 @@ export function registerPhameTools(server: McpServer, client: ConduitClient) {
       after: z.string().optional().describe('Cursor for next-page pagination'),
       before: z.string().optional().describe('Cursor for previous-page pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('phame.blog.search', params);
       return jsonResult(result);
@@ -49,6 +51,7 @@ export function registerPhameTools(server: McpServer, client: ConduitClient) {
       addSubscriberPHIDs: z.array(z.string()).optional().describe('Subscriber PHIDs to add'),
       removeSubscriberPHIDs: z.array(z.string()).optional().describe('Subscriber PHIDs to remove'),
     },
+    DESTRUCTIVE,
     async (params) => {
       const transactions: Array<{ type: string; value: unknown }> = [];
 
@@ -117,6 +120,7 @@ export function registerPhameTools(server: McpServer, client: ConduitClient) {
       after: z.string().optional().describe('Cursor for next-page pagination'),
       before: z.string().optional().describe('Cursor for previous-page pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('phame.post.search', params);
       return jsonResult(result);
@@ -135,6 +139,7 @@ export function registerPhameTools(server: McpServer, client: ConduitClient) {
       visibility: z.coerce.number().optional().describe('Visibility: 0 (draft, default), 1 (published), 2 (archived)'),
       addSubscriberPHIDs: z.array(z.string()).optional().describe('Subscriber PHIDs to add'),
     },
+    ADDITIVE,
     async (params) => {
       const transactions: Array<{ type: string; value: unknown }> = [
         { type: 'title', value: params.title },
@@ -171,6 +176,7 @@ export function registerPhameTools(server: McpServer, client: ConduitClient) {
       removeSubscriberPHIDs: z.array(z.string()).optional().describe('Subscriber PHIDs to remove'),
       comment: z.string().optional().describe('Add a comment alongside the edit (supports Remarkup)'),
     },
+    DESTRUCTIVE,
     async (params) => {
       const transactions: Array<{ type: string; value: unknown }> = [];
 
@@ -219,6 +225,7 @@ export function registerPhameTools(server: McpServer, client: ConduitClient) {
       objectIdentifier: z.string().describe('Post PHID or ID'),
       comment: z.string().describe('Comment text (supports Remarkup)'),
     },
+    ADDITIVE,
     async (params) => {
       const result = await client.call('phame.post.edit', {
         objectIdentifier: params.objectIdentifier,

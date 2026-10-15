@@ -3,6 +3,7 @@ import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
 import { jsonResult } from './result.js';
+import { READ_ONLY } from './annotations.js';
 
 export function registerUserTools(server: McpServer, client: ConduitClient) {
   // Get current user
@@ -10,6 +11,7 @@ export function registerUserTools(server: McpServer, client: ConduitClient) {
     'phabricator_user_whoami',
     'Get information about the current authenticated user',
     {},
+    READ_ONLY,
     async () => {
       const result = await client.call('user.whoami');
       return jsonResult(result);
@@ -45,6 +47,7 @@ export function registerUserTools(server: McpServer, client: ConduitClient) {
       after: z.string().optional().describe('Cursor for next-page pagination'),
       before: z.string().optional().describe('Cursor for previous-page pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('user.search', params);
       return jsonResult(result);

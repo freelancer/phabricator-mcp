@@ -3,6 +3,7 @@ import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
 import { jsonResult } from './result.js';
+import { ADDITIVE, DESTRUCTIVE, READ_ONLY } from './annotations.js';
 
 export function registerConpherenceTools(server: McpServer, client: ConduitClient) {
   // Search chat rooms
@@ -22,6 +23,7 @@ export function registerConpherenceTools(server: McpServer, client: ConduitClien
       after: z.string().optional().describe('Cursor for next-page pagination'),
       before: z.string().optional().describe('Cursor for previous-page pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('conpherence.search', params);
       return jsonResult(result);
@@ -38,6 +40,7 @@ export function registerConpherenceTools(server: McpServer, client: ConduitClien
       limit: z.coerce.number().max(100).optional().describe('Maximum messages to return'),
       offset: z.coerce.number().optional().describe('Result offset for pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('conpherence.querytransaction', {
         roomID: params.roomID,
@@ -59,6 +62,7 @@ export function registerConpherenceTools(server: McpServer, client: ConduitClien
       message: z.string().optional().describe('Initial message (supports Remarkup)'),
       participantPHIDs: z.array(z.string()).optional().describe('Participant user PHIDs to add'),
     },
+    ADDITIVE,
     async (params) => {
       const transactions: Array<{ type: string; value: unknown }> = [
         { type: 'name', value: params.title },
@@ -91,6 +95,7 @@ export function registerConpherenceTools(server: McpServer, client: ConduitClien
       removeParticipantPHIDs: z.array(z.string()).optional().describe('Participant PHIDs to remove'),
       comment: z.string().optional().describe('Send a message alongside the edit (supports Remarkup)'),
     },
+    DESTRUCTIVE,
     async (params) => {
       const transactions: Array<{ type: string; value: unknown }> = [];
 
@@ -130,6 +135,7 @@ export function registerConpherenceTools(server: McpServer, client: ConduitClien
       objectIdentifier: z.string().describe('Room monogram (e.g., "Z123"), numeric ID, or PHID'),
       message: z.string().describe('Message text (supports Remarkup)'),
     },
+    ADDITIVE,
     async (params) => {
       const result = await client.call('conpherence.edit', {
         objectIdentifier: params.objectIdentifier,

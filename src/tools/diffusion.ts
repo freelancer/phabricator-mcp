@@ -5,6 +5,7 @@ import { jsonCoerce } from './coerce.js';
 import { jsonResult } from './result.js';
 import { decodeText, DEFAULT_BYTE_LIMIT, hasBinaryExtension, INVALID_UTF8_NOTE, isTextMimeType, sliceLines } from './file-text.js';
 import { FileContentCache, isCommitHash } from './file-cache.js';
+import { DESTRUCTIVE, READ_ONLY } from './annotations.js';
 
 export function registerDiffusionTools(server: McpServer, client: ConduitClient) {
   // Search repositories
@@ -34,6 +35,7 @@ export function registerDiffusionTools(server: McpServer, client: ConduitClient)
       after: z.string().optional().describe('Cursor for next-page pagination'),
       before: z.string().optional().describe('Cursor for previous-page pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('diffusion.repository.search', params);
       return jsonResult(result);
@@ -72,6 +74,7 @@ export function registerDiffusionTools(server: McpServer, client: ConduitClient)
       after: z.string().optional().describe('Cursor for next-page pagination'),
       before: z.string().optional().describe('Cursor for previous-page pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('diffusion.commit.search', params);
       return jsonResult(result);
@@ -90,6 +93,7 @@ export function registerDiffusionTools(server: McpServer, client: ConduitClient)
       limit: z.coerce.number().optional().describe('Maximum entries to return'),
       offset: z.coerce.number().optional().describe('Result offset for pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('diffusion.browsequery', params);
       return jsonResult(result);
@@ -113,6 +117,7 @@ export function registerDiffusionTools(server: McpServer, client: ConduitClient)
       startColumn: z.coerce.number().int().min(1).optional().describe('Where to start in startLine, 1-based, in UTF-16 code units, as a previous note gives it'),
       lineCount: z.coerce.number().int().min(1).optional().describe('Lines to return'),
     },
+    READ_ONLY,
     async (params) => {
       const byteLimit = params.byteLimit ?? DEFAULT_BYTE_LIMIT;
       const commit = await resolveCommit(client, params);
@@ -160,6 +165,7 @@ export function registerDiffusionTools(server: McpServer, client: ConduitClient)
       limit: z.coerce.number().max(100).optional().describe('Maximum results (max 100)'),
       offset: z.coerce.number().optional().describe('Result offset for pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('diffusion.branchquery', params);
       return jsonResult(result);
@@ -179,6 +185,7 @@ export function registerDiffusionTools(server: McpServer, client: ConduitClient)
       limit: z.coerce.number().max(100).optional().describe('Maximum results (max 100)'),
       offset: z.coerce.number().optional().describe('Result offset for pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('diffusion.tagsquery', params);
       return jsonResult(result);
@@ -200,6 +207,7 @@ export function registerDiffusionTools(server: McpServer, client: ConduitClient)
       limit: z.coerce.number().max(100).optional().describe('Maximum results (default: 100)'),
       offset: z.coerce.number().optional().describe('Result offset for pagination (default: 0)'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('diffusion.historyquery', {
         ...params,
@@ -223,6 +231,7 @@ export function registerDiffusionTools(server: McpServer, client: ConduitClient)
       limit: z.coerce.number().max(100).optional().describe('Maximum results (max 100)'),
       offset: z.coerce.number().optional().describe('Result offset for pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('diffusion.searchquery', {
         path: params.path ?? '',
@@ -254,6 +263,7 @@ export function registerDiffusionTools(server: McpServer, client: ConduitClient)
       removeProjectPHIDs: z.array(z.string()).optional().describe('Project PHIDs to remove'),
       space: z.string().optional().describe('Space PHID (for multi-space installations)'),
     },
+    DESTRUCTIVE,
     async (params) => {
       const transactions: Array<{ type: string; value: unknown }> = [];
 

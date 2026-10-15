@@ -3,6 +3,7 @@ import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
 import { jsonResult } from './result.js';
+import { ADDITIVE, DESTRUCTIVE, READ_ONLY } from './annotations.js';
 
 export function registerPasteTools(server: McpServer, client: ConduitClient) {
   // Search pastes
@@ -34,6 +35,7 @@ export function registerPasteTools(server: McpServer, client: ConduitClient) {
       after: z.string().optional().describe('Cursor for next-page pagination'),
       before: z.string().optional().describe('Cursor for previous-page pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('paste.search', params);
       return jsonResult(result);
@@ -52,6 +54,7 @@ export function registerPasteTools(server: McpServer, client: ConduitClient) {
       addSubscriberPHIDs: z.array(z.string()).optional().describe('Subscriber PHIDs to add'),
       addProjectPHIDs: z.array(z.string()).optional().describe('Project PHIDs to tag'),
     },
+    ADDITIVE,
     async (params) => {
       const transactions: Array<{ type: string; value: unknown }> = [
         { type: 'text', value: params.content },
@@ -94,6 +97,7 @@ export function registerPasteTools(server: McpServer, client: ConduitClient) {
       removeProjectPHIDs: z.array(z.string()).optional().describe('Project PHIDs to remove'),
       comment: z.string().optional().describe('Add a comment alongside the edit (supports Remarkup)'),
     },
+    DESTRUCTIVE,
     async (params) => {
       const transactions: Array<{ type: string; value: unknown }> = [];
 

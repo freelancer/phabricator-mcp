@@ -3,6 +3,7 @@ import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
 import { jsonResult } from './result.js';
+import { DESTRUCTIVE, READ_ONLY } from './annotations.js';
 
 export function registerProjectTools(server: McpServer, client: ConduitClient) {
   // Search projects
@@ -40,6 +41,7 @@ export function registerProjectTools(server: McpServer, client: ConduitClient) {
       after: z.string().optional().describe('Cursor for next-page pagination'),
       before: z.string().optional().describe('Cursor for previous-page pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('project.search', params);
       return jsonResult(result);
@@ -63,6 +65,7 @@ export function registerProjectTools(server: McpServer, client: ConduitClient) {
       milestone: z.string().optional().describe('Parent project PHID (to create as a milestone of that project)'),
       slug: z.string().optional().describe('Project URL slug (replaces ALL existing slugs with this one)'),
     },
+    DESTRUCTIVE,
     async (params) => {
       const transactions: Array<{ type: string; value: unknown }> = [];
 
@@ -126,6 +129,7 @@ export function registerProjectTools(server: McpServer, client: ConduitClient) {
       after: z.string().optional().describe('Cursor for next-page pagination'),
       before: z.string().optional().describe('Cursor for previous-page pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('project.column.search', params);
       return jsonResult(result);

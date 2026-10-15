@@ -3,6 +3,7 @@ import { ConduitError, type ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
 import { jsonResult } from './result.js';
+import { ADDITIVE, DESTRUCTIVE, READ_ONLY } from './annotations.js';
 
 const revisionID = z.preprocess(
   (val) => (typeof val === 'string' ? val.replace(/^D/i, '') : val),
@@ -42,6 +43,7 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
       after: z.string().optional().describe('Cursor for next-page pagination'),
       before: z.string().optional().describe('Cursor for previous-page pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('differential.revision.search', params);
       return jsonResult(result);
@@ -75,6 +77,7 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
       addChildPHIDs: z.array(z.string()).optional().describe('Child revision PHIDs to add (dependents)'),
       removeChildPHIDs: z.array(z.string()).optional().describe('Child revision PHIDs to remove'),
     },
+    DESTRUCTIVE,
     async (params) => {
       const transactions: Array<{ type: string; value: unknown }> = [];
 
@@ -157,6 +160,7 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
     {
       diffID: z.coerce.number().describe('The diff ID (numeric, e.g., 1392561). Use phabricator_diff_search to find this from a revision.'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call<string>('differential.getrawdiff', {
         diffID: params.diffID,
@@ -184,6 +188,7 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
       after: z.string().optional().describe('Cursor for next-page pagination'),
       before: z.string().optional().describe('Cursor for previous-page pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('differential.diff.search', params);
       return jsonResult(result);
@@ -197,6 +202,7 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
     {
       revision_id: z.coerce.number().describe('Numeric revision ID (e.g., 123). Do not include the "D" prefix.'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('differential.getcommitpaths', {
         revision_id: params.revision_id,
@@ -221,6 +227,7 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
       endOffset: z.coerce.number().optional().describe('Exclusive column on the last line where the highlighted range ends. Requires startOffset.'),
       suggestionText: z.string().optional().describe('Suggested replacement for the commented lines on the new side. "" suggests deleting them. Needs a diff uploaded with full context, as arc diff does.'),
     },
+    ADDITIVE,
     async (params) => {
       const base = {
         revisionID: params.revisionID,
@@ -266,6 +273,7 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
       after: z.string().optional().describe('Cursor for next-page pagination'),
       before: z.string().optional().describe('Cursor for previous-page pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('differential.inline.search', params);
       return jsonResult(result);
@@ -281,6 +289,7 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
       inlineIDs: z.array(z.coerce.number()).optional().describe('Publish only these draft inline IDs. Omit to publish all your drafts on the revision.'),
       message: z.string().optional().describe('Top-level review comment (supports Remarkup)'),
     },
+    DESTRUCTIVE,
     async (params) => {
       const result = await client.call('differential.inline.publish', params);
       return jsonResult(result);
@@ -295,6 +304,7 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
       inlineID: z.coerce.number().describe('Inline comment ID (the "id" from phabricator_revision_inline_search)'),
       isDone: z.boolean().describe('true to mark Done, false to clear it'),
     },
+    { ...DESTRUCTIVE, idempotentHint: true },
     async (params) => {
       const result = await client.call('differential.inline.setdone', params);
       return jsonResult(result);

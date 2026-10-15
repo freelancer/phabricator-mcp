@@ -3,6 +3,7 @@ import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
 import { jsonResult } from './result.js';
+import { DESTRUCTIVE, READ_ONLY } from './annotations.js';
 
 export function registerHarbormasterTools(server: McpServer, client: ConduitClient) {
   // Search buildables
@@ -24,6 +25,7 @@ export function registerHarbormasterTools(server: McpServer, client: ConduitClie
       after: z.string().optional().describe('Cursor for next-page pagination'),
       before: z.string().optional().describe('Cursor for previous-page pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('harbormaster.buildable.search', params);
       return jsonResult(result);
@@ -52,6 +54,7 @@ export function registerHarbormasterTools(server: McpServer, client: ConduitClie
       after: z.string().optional().describe('Cursor for next-page pagination'),
       before: z.string().optional().describe('Cursor for previous-page pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('harbormaster.build.search', params);
       return jsonResult(result);
@@ -74,6 +77,7 @@ export function registerHarbormasterTools(server: McpServer, client: ConduitClie
       after: z.string().optional().describe('Cursor for next-page pagination'),
       before: z.string().optional().describe('Cursor for previous-page pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('harbormaster.target.search', params);
       return jsonResult(result);
@@ -96,6 +100,7 @@ export function registerHarbormasterTools(server: McpServer, client: ConduitClie
       after: z.string().optional().describe('Cursor for next-page pagination'),
       before: z.string().optional().describe('Cursor for previous-page pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('harbormaster.log.search', params);
       return jsonResult(result);
@@ -130,6 +135,7 @@ export function registerHarbormasterTools(server: McpServer, client: ConduitClie
         description: z.string().optional().describe('Lint message description'),
       }))).optional().describe('Lint results to report'),
     },
+    DESTRUCTIVE,
     async (params) => {
       const apiParams: Record<string, unknown> = {
         buildTargetPHID: params.buildTargetPHID,
@@ -163,6 +169,7 @@ export function registerHarbormasterTools(server: McpServer, client: ConduitClie
       after: z.string().optional().describe('Cursor for next-page pagination'),
       before: z.string().optional().describe('Cursor for previous-page pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('harbormaster.buildplan.search', params);
       return jsonResult(result);

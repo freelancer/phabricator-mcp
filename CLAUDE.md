@@ -35,7 +35,7 @@ The site (`docs/index.html`) is a single static HTML file served via GitHub Page
 
 ## Patterns
 
-- Every tool follows: `server.tool(name, description, zodSchema, asyncHandler)`
+- Every tool follows: `server.tool(name, description, zodSchema, annotations, asyncHandler)`, with `annotations` based on `READ_ONLY`, `ADDITIVE` or `DESTRUCTIVE` from `src/tools/annotations.ts`
 - Edit tools use transactions: `{ type: string, value: unknown }[]` passed to `*.edit` Conduit methods
 - Use `jsonCoerce()` wrapper on object/record Zod schemas (handles JSON string inputs from some MCP clients)
 - Tool names are prefixed with `phabricator_`

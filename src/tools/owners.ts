@@ -3,6 +3,7 @@ import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
 import { jsonResult } from './result.js';
+import { READ_ONLY } from './annotations.js';
 
 export function registerOwnersTools(server: McpServer, client: ConduitClient) {
   // Search code ownership packages
@@ -29,6 +30,7 @@ export function registerOwnersTools(server: McpServer, client: ConduitClient) {
       after: z.string().optional().describe('Cursor for next-page pagination'),
       before: z.string().optional().describe('Cursor for previous-page pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('owners.search', params);
       return jsonResult(result);

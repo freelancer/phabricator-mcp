@@ -3,6 +3,7 @@ import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
 import { jsonResult } from './result.js';
+import { ADDITIVE, READ_ONLY } from './annotations.js';
 
 export function registerFileTools(server: McpServer, client: ConduitClient) {
   // Upload a file
@@ -15,6 +16,7 @@ export function registerFileTools(server: McpServer, client: ConduitClient) {
       viewPolicy: z.string().optional().describe('File visibility policy (e.g., "public", "users", or a custom policy PHID)'),
       canCDN: z.boolean().optional().describe('Whether the file can be served over CDN (for public assets)'),
     },
+    ADDITIVE,
     async (params) => {
       const apiParams: Record<string, unknown> = {
         data_base64: params.data_base64,
@@ -57,6 +59,7 @@ export function registerFileTools(server: McpServer, client: ConduitClient) {
       after: z.string().optional().describe('Cursor for next-page pagination'),
       before: z.string().optional().describe('Cursor for previous-page pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('file.search', params);
       return jsonResult(result);
@@ -71,6 +74,7 @@ export function registerFileTools(server: McpServer, client: ConduitClient) {
       id: z.coerce.number().optional().describe('File ID (provide this or phid)'),
       phid: z.string().optional().describe('File PHID (provide this or id)'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('file.info', params);
       return jsonResult(result);

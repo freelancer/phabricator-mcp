@@ -2,6 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonResult } from './result.js';
+import { READ_ONLY } from './annotations.js';
 
 export function registerFeedTools(server: McpServer, client: ConduitClient) {
   // Query activity feed
@@ -15,6 +16,7 @@ export function registerFeedTools(server: McpServer, client: ConduitClient) {
       after: z.coerce.number().optional().describe('Cursor for pagination (chronological key from previous results)'),
       before: z.coerce.number().optional().describe('Cursor for reverse pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('feed.query', params);
       return jsonResult(result);

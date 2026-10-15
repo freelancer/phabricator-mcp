@@ -19,6 +19,7 @@ import { registerOwnersTools } from './owners.js';
 import { registerFeedTools } from './feed.js';
 import { registerConpherenceTools } from './conpherence.js';
 import { registerAuditTools } from './audit.js';
+import { READ_ONLY } from './annotations.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(join(__dirname, '..', '..', 'package.json'), 'utf-8'));
@@ -28,6 +29,7 @@ export function registerAllTools(server: McpServer, client: ConduitClient) {
     'phabricator_version',
     'Get the version of the running phabricator-mcp server',
     {},
+    READ_ONLY,
     async () => ({
       content: [{ type: 'text', text: pkg.version }],
     }),

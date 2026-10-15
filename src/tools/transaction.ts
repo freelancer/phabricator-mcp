@@ -3,6 +3,7 @@ import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
 import { jsonResult } from './result.js';
+import { READ_ONLY } from './annotations.js';
 
 export function registerTransactionTools(server: McpServer, client: ConduitClient) {
   server.tool(
@@ -18,6 +19,7 @@ export function registerTransactionTools(server: McpServer, client: ConduitClien
       after: z.string().optional().describe('Cursor for next-page pagination'),
       before: z.string().optional().describe('Cursor for previous-page pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('transaction.search', params);
       return jsonResult(result);

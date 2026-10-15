@@ -3,6 +3,7 @@ import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
 import { jsonResult } from './result.js';
+import { ADDITIVE, DESTRUCTIVE, READ_ONLY } from './annotations.js';
 
 /**
  * Resolve revision identifiers (e.g. "D223125", "PHID-DREV-xxx") to PHIDs.
@@ -185,6 +186,7 @@ export function registerManiphestTools(server: McpServer, client: ConduitClient)
       before: z.string().optional().describe('Cursor for previous-page pagination'),
       includeEmptyCustomFields: z.boolean().optional().describe('Also return custom fields that have no value, as null, to see every custom field key a task can take'),
     },
+    READ_ONLY,
     async ({ includeEmptyCustomFields, ...params }) => {
       const result = await client.call('maniphest.search', params);
       return jsonResult(result, { keepEmptyCustomFields: includeEmptyCustomFields });
@@ -215,6 +217,7 @@ export function registerManiphestTools(server: McpServer, client: ConduitClient)
         'Custom field transactions. Keys are transaction types (e.g. "custom.my-field"), values are the field values. phabricator_task_search with includeEmptyCustomFields: true lists every key.'
       ),
     },
+    ADDITIVE,
     async (params) => {
       const transactions: Array<{ type: string; value: unknown }> = [
         { type: 'title', value: params.title },
@@ -319,6 +322,7 @@ export function registerManiphestTools(server: McpServer, client: ConduitClient)
         'Custom field transactions. Keys are transaction types (e.g. "custom.my-field"), values are the field values. phabricator_task_search with includeEmptyCustomFields: true lists every key.'
       ),
     },
+    DESTRUCTIVE,
     async (params) => {
       const transactions: Array<{ type: string; value: unknown }> = [];
 
@@ -438,6 +442,7 @@ export function registerManiphestTools(server: McpServer, client: ConduitClient)
       objectIdentifier: z.string().describe('Task PHID or ID (e.g., "T123")'),
       comment: z.string().describe('Comment text (supports Remarkup)'),
     },
+    ADDITIVE,
     async (params) => {
       const result = await client.call('maniphest.edit', {
         objectIdentifier: params.objectIdentifier,
@@ -452,6 +457,7 @@ export function registerManiphestTools(server: McpServer, client: ConduitClient)
     'phabricator_task_status_search',
     'List all available task statuses configured on this Phabricator instance',
     {},
+    READ_ONLY,
     async () => {
       const result = await client.call('maniphest.status.search');
       return jsonResult(result);
@@ -463,6 +469,7 @@ export function registerManiphestTools(server: McpServer, client: ConduitClient)
     'phabricator_task_priority_search',
     'List all available task priorities configured on this Phabricator instance',
     {},
+    READ_ONLY,
     async () => {
       const result = await client.call('maniphest.priority.search');
       return jsonResult(result);

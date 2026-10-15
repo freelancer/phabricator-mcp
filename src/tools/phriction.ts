@@ -3,6 +3,7 @@ import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
 import { jsonResult } from './result.js';
+import { ADDITIVE, DESTRUCTIVE, READ_ONLY } from './annotations.js';
 
 export function registerPhrictionTools(server: McpServer, client: ConduitClient) {
   // Search wiki documents
@@ -33,6 +34,7 @@ export function registerPhrictionTools(server: McpServer, client: ConduitClient)
       after: z.string().optional().describe('Cursor for next-page pagination'),
       before: z.string().optional().describe('Cursor for previous-page pagination'),
     },
+    READ_ONLY,
     async (params) => {
       const result = await client.call('phriction.document.search', params);
       return jsonResult(result);
@@ -49,6 +51,7 @@ export function registerPhrictionTools(server: McpServer, client: ConduitClient)
       content: z.string().describe('Document content (Remarkup)'),
       description: z.string().optional().describe('Edit description/summary'),
     },
+    ADDITIVE,
     async (params) => {
       const result = await client.call('phriction.create', params);
       return jsonResult(result);
@@ -65,6 +68,7 @@ export function registerPhrictionTools(server: McpServer, client: ConduitClient)
       content: z.string().optional().describe('New document content (Remarkup)'),
       description: z.string().optional().describe('Edit description/summary'),
     },
+    DESTRUCTIVE,
     async (params) => {
       const result = await client.call('phriction.edit', params);
       return jsonResult(result);
@@ -79,6 +83,7 @@ export function registerPhrictionTools(server: McpServer, client: ConduitClient)
       objectIdentifier: z.string().describe('Document slug, PHID, or ID (e.g., "projects/myproject/")'),
       comment: z.string().describe('Comment text (supports Remarkup)'),
     },
+    ADDITIVE,
     async (params) => {
       const result = await client.call('phriction.document.edit', {
         objectIdentifier: params.objectIdentifier,
