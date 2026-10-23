@@ -18,7 +18,7 @@ async function listTools() {
   return tools;
 }
 
-const WRITE_NAME = /_(create|edit|comment|send|publish|upload|command|done)$/;
+const WRITE_NAME = /_(create|edit|delete|comment|send|publish|upload|command|done)$/;
 const READ_NAME = /_(search|query|read|lookup|info|raw|paths|browse|content|history|whoami|version)$/;
 
 describe('tool annotations', () => {
@@ -40,8 +40,8 @@ describe('tool annotations', () => {
     assert.ok(writes.length > 0);
     for (const tool of writes) {
       assert.strictEqual(tool.annotations?.readOnlyHint, false, `${tool.name} writes but is read-only`);
-      if (tool.name.endsWith('_edit')) {
-        assert.strictEqual(tool.annotations?.destructiveHint, true, `${tool.name} edits but is not destructive`);
+      if (/_(edit|delete)$/.test(tool.name)) {
+        assert.strictEqual(tool.annotations?.destructiveHint, true, `${tool.name} edits or deletes but is not destructive`);
       }
     }
   });

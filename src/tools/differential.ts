@@ -310,4 +310,34 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
       return jsonResult(result);
     },
   );
+
+  // Edit a draft inline comment
+  server.tool(
+    'phabricator_revision_inline_edit',
+    'Replace the text and suggested edit of your own draft inline comment, keeping its place in the diff. Published comments cannot be edited. Needs the differential.inline.* Conduit extension.',
+    {
+      inlineID: z.coerce.number().describe('Your draft inline comment ID (from phabricator_revision_inline_search)'),
+      content: z.string().describe('New comment text (supports Remarkup). May be "" if suggestionText is non-empty.'),
+      suggestionText: z.string().optional().describe('New suggested replacement for the commented lines; "" suggests deleting them. Omitting it REMOVES the current suggestion, so pass it back (from phabricator_revision_inline_search) to keep it. New side only, on a full-context diff as arc diff uploads.'),
+    },
+    { ...DESTRUCTIVE, idempotentHint: true },
+    async (params) => {
+      const result = await client.call('differential.inline.edit', params);
+      return jsonResult(result);
+    },
+  );
+
+  // Delete a draft inline comment
+  server.tool(
+    'phabricator_revision_inline_delete',
+    'Delete your own draft inline comment. Published comments cannot be deleted. Needs the differential.inline.* Conduit extension.',
+    {
+      inlineID: z.coerce.number().describe('Your draft inline comment ID (from phabricator_revision_inline_search)'),
+    },
+    DESTRUCTIVE,
+    async (params) => {
+      const result = await client.call('differential.inline.delete', params);
+      return jsonResult(result);
+    },
+  );
 }

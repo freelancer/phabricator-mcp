@@ -240,6 +240,8 @@ The server hides tools that Phabricator cannot serve, such as the Conpherence to
 | `phabricator_revision_inline_search` | List a revision's inline comments with side, range, suggested edit and Done state |
 | `phabricator_revision_inline_publish` | Publish your draft inline comments as one review, like "Submit" in the web UI |
 | `phabricator_revision_inline_done` | Check or uncheck "Done" on an inline comment |
+| `phabricator_revision_inline_edit` | Replace the text and suggested edit of your draft inline comment |
+| `phabricator_revision_inline_delete` | Delete your draft inline comment |
 | `phabricator_diff_raw` | Get the raw diff/patch content for a diff by ID |
 | `phabricator_diff_search` | Search diffs (code change snapshots within a revision) |
 | `phabricator_revision_paths` | Get the list of changed file paths for a revision |
@@ -390,6 +392,7 @@ Once connected, just ask your AI assistant to perform Phabricator tasks in natur
 - "Accept D6789"
 - "Leave an inline comment on line 42 of src/index.ts in D6789"
 - "Suggest an edit for lines 10-12 of src/config.ts in D6789, then publish my review"
+- "Reword my draft inline comment on src/config.ts in D6789, and delete the one on line 12"
 - "Address the unresolved inline comments on D6789"
 
 **Repositories & Builds**

@@ -86,13 +86,12 @@ describe('tool availability', () => {
   });
 
   it('keeps a tool with a fallback method when only the fallback exists', async () => {
-    const methods = new Set(everyMethod);
-    for (const method of ['differential.inline.create', 'differential.inline.search', 'differential.inline.publish', 'differential.inline.setdone']) {
-      methods.delete(method);
-    }
+    const methods = new Set([...everyMethod].filter((method) => !method.startsWith('differential.inline.')));
     const names = await toolNames(methods);
     assert.ok(names.includes('phabricator_revision_inline_comment'));
     assert.ok(!names.includes('phabricator_revision_inline_search'));
+    assert.ok(!names.includes('phabricator_revision_inline_edit'));
+    assert.ok(!names.includes('phabricator_revision_inline_delete'));
   });
 
   it('always lists the version tool', async () => {

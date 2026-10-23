@@ -35,6 +35,8 @@ export const TOOL_METHODS: Record<string, string[]> = {
   phabricator_revision_inline_search: ['differential.inline.search'],
   phabricator_revision_inline_publish: ['differential.inline.publish'],
   phabricator_revision_inline_done: ['differential.inline.setdone'],
+  phabricator_revision_inline_edit: ['differential.inline.edit'],
+  phabricator_revision_inline_delete: ['differential.inline.delete'],
 
   phabricator_repository_search: ['diffusion.repository.search'],
   phabricator_commit_search: ['diffusion.commit.search'],
