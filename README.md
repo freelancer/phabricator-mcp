@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/freelancer-phabricator-mcp-badge.png)](https://mseep.ai/app/freelancer-phabricator-mcp)
+
 # phabricator-mcp
 
 An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that wraps Phabricator's Conduit API, enabling any MCP client to interact with Phabricator tasks, code reviews, repositories, and more.
