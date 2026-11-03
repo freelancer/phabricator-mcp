@@ -94,6 +94,14 @@ describe('tool availability', () => {
     assert.ok(!names.includes('phabricator_revision_inline_delete'));
   });
 
+  it('hides comment edit, but not transaction search, without the transaction.comment.edit extension', async () => {
+    const methods = new Set(everyMethod);
+    methods.delete('transaction.comment.edit');
+    const names = await toolNames(methods);
+    assert.ok(names.includes('phabricator_transaction_search'));
+    assert.ok(!names.includes('phabricator_transaction_comment_edit'));
+  });
+
   it('always lists the version tool', async () => {
     assert.deepStrictEqual(await toolNames(new Set()), ['phabricator_version']);
   });

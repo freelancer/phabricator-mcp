@@ -3,7 +3,7 @@ import type { ConduitClient } from '../client/conduit.js';
 import { z } from 'zod';
 import { jsonCoerce } from './coerce.js';
 import { jsonResult } from './result.js';
-import { READ_ONLY } from './annotations.js';
+import { DESTRUCTIVE, READ_ONLY } from './annotations.js';
 
 export function registerTransactionTools(server: McpServer, client: ConduitClient) {
   server.tool(
@@ -22,6 +22,22 @@ export function registerTransactionTools(server: McpServer, client: ConduitClien
     READ_ONLY,
     async (params) => {
       const result = await client.call('transaction.search', params);
+      return jsonResult(result);
+    },
+  );
+
+  // Edit a published comment
+  server.tool(
+    'phabricator_transaction_comment_edit',
+    'Edit your own published comment (saves a new version). Not for inline comments.',
+    {
+      objectIdentifier: z.string().describe('e.g. "T123", "D456", or a PHID'),
+      transactionPHID: z.string().describe('The comment\'s PHID-XACT-… from phabricator_transaction_search'),
+      content: z.string().min(1).describe('New text (Remarkup)'),
+    },
+    DESTRUCTIVE,
+    async (params) => {
+      const result = await client.call('transaction.comment.edit', params);
       return jsonResult(result);
     },
   );

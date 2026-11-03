@@ -75,6 +75,7 @@ export const TOOL_METHODS: Record<string, string[]> = {
   phabricator_blog_post_add_comment: ['phame.post.edit'],
 
   phabricator_transaction_search: ['transaction.search'],
+  phabricator_transaction_comment_edit: ['transaction.comment.edit'],
 
   phabricator_file_upload: ['file.upload'],
   phabricator_file_search: ['file.search'],

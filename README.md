@@ -310,6 +310,9 @@ The `phabricator_revision_inline_*` tools call the `differential.inline.*` Condu
 | Tool | Description |
 |------|-------------|
 | `phabricator_transaction_search` | Search transactions (comments, status changes, etc.) on any object |
+| `phabricator_transaction_comment_edit` | Replace the text of your published comment on any object |
+
+`phabricator_transaction_comment_edit` calls the `transaction.comment.edit` Conduit method, which stock Phabricator does not ship; the server hides the tool on an instance without it.
 
 ### Files
 
@@ -408,6 +411,7 @@ Once connected, just ask your AI assistant to perform Phabricator tasks in natur
 - "Search commits by author alice"
 - "Look up T123 and D456"
 - "Show me the comments on D6789"
+- "Fix the typo in my last comment on T12345"
 
 **Wiki & Pastes**
 - "Find wiki pages about deployment"
