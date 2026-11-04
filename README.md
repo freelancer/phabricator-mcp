@@ -236,7 +236,7 @@ The server hides tools that Phabricator cannot serve, such as the Conpherence to
 |------|-------------|
 | `phabricator_revision_search` | Search code review revisions |
 | `phabricator_revision_edit` | Edit a revision (accept, reject, abandon, add reviewers, comment, etc.) |
-| `phabricator_revision_inline_comment` | Create a draft inline comment on a line or character range, optionally with a suggested edit |
+| `phabricator_revision_inline_comment` | Create a draft inline comment on a line or character range, optionally with a suggested edit, or a threaded reply to a published one |
 | `phabricator_revision_inline_search` | List a revision's inline comments with side, range, suggested edit and Done state |
 | `phabricator_revision_inline_publish` | Publish your draft inline comments as one review, like "Submit" in the web UI |
 | `phabricator_revision_inline_done` | Check or uncheck "Done" on an inline comment |
@@ -246,7 +246,7 @@ The server hides tools that Phabricator cannot serve, such as the Conpherence to
 | `phabricator_diff_search` | Search diffs (code change snapshots within a revision) |
 | `phabricator_revision_paths` | Get the list of changed file paths for a revision |
 
-The `phabricator_revision_inline_*` tools call the `differential.inline.*` Conduit methods, which stock Phabricator does not ship. Without them, `phabricator_revision_inline_comment` still creates plain line comments through `differential.createinline`, but those drafts cannot be published through Conduit.
+The `phabricator_revision_inline_*` tools call the `differential.inline.*` Conduit methods, which stock Phabricator does not ship. Without them, `phabricator_revision_inline_comment` still creates plain line comments through `differential.createinline`, but those drafts cannot be published through Conduit. Replies (`replyToInlineID`) need a version of the extension that supports them; an older one refuses the call (`does not define these parameters: 'replyToInlineID'`) and creates nothing.
 
 ### Repositories (Diffusion)
 
@@ -397,6 +397,7 @@ Once connected, just ask your AI assistant to perform Phabricator tasks in natur
 - "Suggest an edit for lines 10-12 of src/config.ts in D6789, then publish my review"
 - "Reword my draft inline comment on src/config.ts in D6789, and delete the one on line 12"
 - "Address the unresolved inline comments on D6789"
+- "Reply to the inline comments on D6789 that ask me a question, then publish"
 
 **Repositories & Builds**
 - "Show me the contents of src/config.ts in repo Backend"

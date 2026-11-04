@@ -211,24 +211,35 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
     },
   );
 
-  // Create inline comment on a diff
+  // Create inline comment on a diff, or reply to one
   server.tool(
     'phabricator_revision_inline_comment',
-    'Create a draft inline comment on a Differential diff, optionally highlighting a character range and attaching a suggested edit. Drafts are visible only to you until you call phabricator_revision_inline_publish; a plain comment via phabricator_revision_edit does NOT publish them. Ranges and suggestions need the differential.inline.* Conduit extension; without it, plain line comments fall back to differential.createinline.',
+    'Create a draft inline comment on a Differential diff, optionally highlighting a character range and attaching a suggested edit, or a draft reply to a published inline comment (replyToInlineID). Drafts are visible only to you until you call phabricator_revision_inline_publish; a plain comment via phabricator_revision_edit does NOT publish them. Ranges, suggestions and replies need the differential.inline.* Conduit extension; without it, plain line comments fall back to differential.createinline.',
     {
       revisionID: revisionID.describe('Revision ID (e.g., 123 or "D123")'),
       diffID: z.coerce.number().optional().describe('Diff ID to comment on. Defaults to the revision\'s active diff.'),
-      filePath: z.string().describe('Path to the file being commented on'),
-      lineNumber: z.coerce.number().describe('First line of the comment'),
+      filePath: z.string().optional().describe('Path to the file being commented on. Required unless replying.'),
+      lineNumber: z.coerce.number().optional().describe('First line of the comment. Required unless replying.'),
       lineLength: z.coerce.number().optional().describe('How many more lines the comment spans after lineNumber (default: 0, a single line)'),
       content: z.string().describe('Comment text (supports Remarkup)'),
       isNewFile: z.boolean().optional().describe('Whether the line number refers to the new file (true) or old file (false). Default: true'),
       startOffset: z.coerce.number().optional().describe('0-based column on the first line where the highlighted range starts, counted as the web UI shows it (each tab is up to 2 columns). Requires endOffset.'),
       endOffset: z.coerce.number().optional().describe('Exclusive column on the last line where the highlighted range ends. Requires startOffset.'),
       suggestionText: z.string().optional().describe('Suggested replacement for the commented lines on the new side. "" suggests deleting them. Needs a diff uploaded with full context, as arc diff does.'),
+      replyToInlineID: z.coerce.number().optional().describe('Reply to this published inline comment (its "id" from phabricator_revision_inline_search), as "Reply" does in the web UI. The reply goes on the same diff, side and lines as that comment and is threaded under it, so leave out diffID, filePath, lineNumber, lineLength and isNewFile (any given must match the comment). A reply cannot have startOffset, endOffset or suggestionText. You cannot reply to a draft, including your own: edit it instead.'),
     },
     ADDITIVE,
     async (params) => {
+      // A reply takes its place from the comment it answers, so send no
+      // defaults: Phabricator rejects a place that differs from the parent's.
+      // No differential.createinline fallback either: it cannot thread.
+      if (params.replyToInlineID !== undefined) {
+        return jsonResult(await client.call('differential.inline.create', { ...params }));
+      }
+      if (params.filePath === undefined || params.lineNumber === undefined) {
+        throw new Error('filePath and lineNumber are required unless replyToInlineID is given.');
+      }
+
       const base = {
         revisionID: params.revisionID,
         diffID: params.diffID,
