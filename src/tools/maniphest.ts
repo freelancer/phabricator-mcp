@@ -77,6 +77,18 @@ async function linkRevisionsToTask(
   return results;
 }
 
+// The maniphest.edit transaction for a task's due date (phlab's Deadline
+// field), the same key maniphest.search reports it under.
+const DUE_DATE_TRANSACTION = 'maniphest:deadline';
+
+// A date, or an epoch in seconds. Phabricator checks the date is real and reads
+// it in the caller's timezone. Digit strings are refused, not coerced: a date
+// sent as "20261120" would otherwise become an epoch in 1970.
+const dueDateSchema = z.union([
+  z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected a date as YYYY-MM-DD'),
+  z.number().int().positive(),
+]);
+
 /**
  * Phabricator custom fields are only editable when the task's subtype matches
  * the form that exposes them. For example, `custom.postmortem.*` fields require
@@ -315,6 +327,9 @@ export function registerManiphestTools(server: McpServer, client: ConduitClient)
       addRevisionIDs: z.array(z.string()).optional().describe('Differential revision IDs to link (e.g. ["D223125"] or ["PHID-DREV-xxx"]). Creates a bidirectional link between the revision and the task.'),
       removeRevisionIDs: z.array(z.string()).optional().describe('Differential revision IDs to unlink (e.g. ["D223125"] or ["PHID-DREV-xxx"]).'),
       points: z.coerce.number().nullable().optional().describe('Story points value (null to clear)'),
+      dueDate: dueDateSchema.nullable().optional().describe(
+        'Due date (the task\'s Deadline): "YYYY-MM-DD", read as the start of that day in your Phabricator timezone as the web form sets it; null removes it. Use the date form: an epoch in seconds is accepted only to copy one back from maniphest:deadline.epoch, since a computed epoch is easily a day out in another timezone. Always send the full year; if the user gave none, say which year you used. Phabricator posts a reminder on the task a day before. Shown by phabricator_task_search as maniphest:deadline.'
+      ),
       columnPHID: z.string().optional().describe('Move to workboard column'),
       space: z.string().optional().describe('Space PHID to move the task to (for multi-space installations)'),
       comment: z.string().optional().describe('Add a comment alongside the edit (supports Remarkup)'),
@@ -376,6 +391,11 @@ export function registerManiphestTools(server: McpServer, client: ConduitClient)
       }
       if (params.points !== undefined) {
         transactions.push({ type: 'points', value: params.points });
+      }
+      if (params.dueDate !== undefined) {
+        // phlab's Deadline field; on a Phabricator without its maniphest.edit
+        // support, the whole edit fails with "invalid type" and nothing changes.
+        transactions.push({ type: DUE_DATE_TRANSACTION, value: params.dueDate });
       }
       if (params.columnPHID !== undefined) {
         transactions.push({ type: 'column', value: [params.columnPHID] });

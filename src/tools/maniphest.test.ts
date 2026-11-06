@@ -43,3 +43,59 @@ describe('phabricator_task_edit', () => {
     }]);
   });
 });
+
+describe('phabricator_task_edit dueDate', () => {
+  const sent = async (dueDate: unknown) => {
+    const { calls, result } = await callTool('phabricator_task_edit', { objectIdentifier: 'T1', dueDate });
+    return { calls, result };
+  };
+
+  it('sends a date as maniphest:deadline, for Phabricator to read in the caller\'s timezone', async () => {
+    const { calls, result } = await sent('2026-11-20');
+    assert.ok(!result.isError);
+    assert.deepStrictEqual(calls, [{
+      method: 'maniphest.edit',
+      params: {
+        objectIdentifier: 'T1',
+        transactions: [{ type: 'maniphest:deadline', value: '2026-11-20' }],
+      },
+    }]);
+  });
+
+  it('sends an epoch', async () => {
+    const { calls, result } = await sent(1800000000);
+    assert.ok(!result.isError);
+    assert.deepStrictEqual(calls[0].params.transactions, [{ type: 'maniphest:deadline', value: 1800000000 }]);
+  });
+
+  it('sends null to remove the due date', async () => {
+    const { calls } = await sent(null);
+    assert.deepStrictEqual(calls[0].params.transactions, [{ type: 'maniphest:deadline', value: null }]);
+  });
+
+  it('sends the due date in the same edit as the other changes', async () => {
+    const { calls } = await callTool('phabricator_task_edit', {
+      objectIdentifier: 'T1',
+      title: 'New title',
+      dueDate: '2026-11-20',
+    });
+    assert.strictEqual(calls.length, 1);
+    assert.deepStrictEqual(calls[0].params.transactions, [
+      { type: 'title', value: 'New title' },
+      { type: 'maniphest:deadline', value: '2026-11-20' },
+    ]);
+  });
+
+  it('refuses other shapes without calling Phabricator', async () => {
+    for (const value of ['20261120', '1800000000', '20/11/2026', '2026-11-20T09:00:00Z', 'next friday', 0, -1, 1.5, true]) {
+      const { calls, result } = await sent(value);
+      assert.ok(result.isError, JSON.stringify(value));
+      assert.strictEqual(calls.length, 0, JSON.stringify(value));
+    }
+  });
+
+  it('leaves the due date alone when not given', async () => {
+    const { calls } = await callTool('phabricator_task_edit', { objectIdentifier: 'T1', title: 'x' });
+    assert.deepStrictEqual(calls[0].params.transactions, [{ type: 'title', value: 'x' }]);
+  });
+});

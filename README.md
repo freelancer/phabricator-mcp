@@ -225,10 +225,12 @@ The server hides tools that Phabricator cannot serve, such as the Conpherence to
 |------|-------------|
 | `phabricator_task_search` | Search tasks with filters (status, assignee, project, etc.) |
 | `phabricator_task_create` | Create a new task |
-| `phabricator_task_edit` | Edit an existing task |
+| `phabricator_task_edit` | Edit an existing task, including its due date |
 | `phabricator_task_add_comment` | Add a comment to a task |
 | `phabricator_task_status_search` | List all available task statuses on the instance |
 | `phabricator_task_priority_search` | List all available task priorities on the instance |
+
+`phabricator_task_edit`'s `dueDate` sets the Deadline field of Freelancer's Phabricator extension (`maniphest:deadline` in `phabricator_task_search`): a `YYYY-MM-DD` date with the full year, read as the start of that day in your Phabricator timezone; `null` removes it. An epoch is also accepted, but only to copy one back from `maniphest:deadline.epoch`: a computed one is easily a day out in another timezone. A Phabricator without that field, or with a version of the extension that cannot set it through Conduit, refuses the whole edit (`has invalid type "maniphest:deadline"`) and changes nothing.
 
 ### Code Reviews (Differential)
 
@@ -384,6 +386,7 @@ Once connected, just ask your AI assistant to perform Phabricator tasks in natur
 - "Close task T12345"
 - "What custom fields are available for incident tasks?"
 - "Set the start date and root cause category on T12345"
+- "Set the due date of T12345 to 20 November 2026"
 - "Make T456 a subtask of T123"
 - "Upload this screenshot and add it to the description of T789"
 
