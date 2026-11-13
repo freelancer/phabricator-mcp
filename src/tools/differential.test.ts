@@ -120,3 +120,80 @@ describe('phabricator_revision_inline_comment', () => {
     });
   });
 });
+
+describe('phabricator_revision_edit acceptAs', () => {
+  const edited = { object: { id: 12, phid: 'PHID-DREV-12' }, transactions: [{ phid: 'PHID-XACT-1' }] };
+  const respond = (method: string) => (method === 'user.whoami' ? { phid: 'PHID-USER-me' } : edited);
+
+  it('sends ["self"] as accept.as with the caller\'s own PHID', async () => {
+    const { calls, result, text } = await callTool(
+      'phabricator_revision_edit',
+      { objectIdentifier: 'D12', acceptAs: ['self'] },
+      respond,
+    );
+
+    assert.ok(!result.isError, text);
+    assert.deepStrictEqual(calls.map((call) => call.method), ['user.whoami', 'differential.revision.edit']);
+    assert.deepStrictEqual(sent(calls[1]!), {
+      objectIdentifier: 'D12',
+      transactions: [{ type: 'accept.as', value: ['PHID-USER-me'] }],
+    });
+  });
+
+  it('sends chosen groups as given, with self resolved once and no duplicates', async () => {
+    const { calls } = await callTool(
+      'phabricator_revision_edit',
+      { objectIdentifier: 'D12', comment: 'LGTM', acceptAs: ['self', 'PHID-PROJ-a', 'PHID-USER-me'] },
+      respond,
+    );
+
+    assert.deepStrictEqual(sent(calls[1]!).transactions, [
+      { type: 'comment', value: 'LGTM' },
+      { type: 'accept.as', value: ['PHID-USER-me', 'PHID-PROJ-a'] },
+    ]);
+  });
+
+  it('does not look the caller up when "self" is not used', async () => {
+    const { calls } = await callTool(
+      'phabricator_revision_edit',
+      { objectIdentifier: 'D12', acceptAs: ['PHID-PROJ-a'] },
+      respond,
+    );
+
+    assert.deepStrictEqual(calls.map((call) => call.method), ['differential.revision.edit']);
+    assert.deepStrictEqual(sent(calls[0]!).transactions, [{ type: 'accept.as', value: ['PHID-PROJ-a'] }]);
+  });
+
+  it('refuses acceptAs with an action before any call', async () => {
+    const { calls, result, text } = await callTool(
+      'phabricator_revision_edit',
+      { objectIdentifier: 'D12', action: 'accept', acceptAs: ['self'] },
+      respond,
+    );
+
+    assert.strictEqual(result.isError, true);
+    assert.match(text, /acceptAs cannot be combined with action/);
+    assert.deepStrictEqual(calls, []);
+  });
+
+  it('refuses an empty acceptAs before any call', async () => {
+    const { calls, result } = await callTool(
+      'phabricator_revision_edit',
+      { objectIdentifier: 'D12', acceptAs: [] },
+      respond,
+    );
+
+    assert.strictEqual(result.isError, true);
+    assert.deepStrictEqual(calls, []);
+  });
+
+  it('still sends action accept as the boolean transaction', async () => {
+    const { calls } = await callTool(
+      'phabricator_revision_edit',
+      { objectIdentifier: 'D12', action: 'accept' },
+      respond,
+    );
+
+    assert.deepStrictEqual(sent(calls[0]!).transactions, [{ type: 'accept', value: true }]);
+  });
+});

@@ -237,7 +237,7 @@ The server hides tools that Phabricator cannot serve, such as the Conpherence to
 | Tool | Description |
 |------|-------------|
 | `phabricator_revision_search` | Search code review revisions |
-| `phabricator_revision_edit` | Edit a revision (accept, reject, abandon, add reviewers, comment, etc.) |
+| `phabricator_revision_edit` | Edit a revision (accept, accept for chosen reviewers only, reject, abandon, add reviewers, comment, etc.) |
 | `phabricator_revision_inline_comment` | Create a draft inline comment on a line or character range, optionally with a suggested edit, or a threaded reply to a published one |
 | `phabricator_revision_inline_search` | List a revision's inline comments with side, range, suggested edit and Done state |
 | `phabricator_revision_inline_publish` | Publish your draft inline comments as one review, like "Submit" in the web UI |
@@ -249,6 +249,8 @@ The server hides tools that Phabricator cannot serve, such as the Conpherence to
 | `phabricator_revision_paths` | Get the list of changed file paths for a revision |
 
 The `phabricator_revision_inline_*` tools call the `differential.inline.*` Conduit methods, which stock Phabricator does not ship. Without them, `phabricator_revision_inline_comment` still creates plain line comments through `differential.createinline`, but those drafts cannot be published through Conduit. Replies (`replyToInlineID`) need a version of the extension that supports them; an older one refuses the call (`does not define these parameters: 'replyToInlineID'`) and creates nothing.
+
+`phabricator_revision_edit`'s `acceptAs` accepts on behalf of only the reviewers listed, as the web UI's "Accept as" checkboxes do: `["self"]` accepts for you alone and never for a group you belong to, and project or package PHIDs add those groups. `action: "accept"` accepts for every group you belong to; the two cannot be combined. `acceptAs` needs Freelancer's Phabricator extension (the `accept.as` transaction); a Phabricator without it refuses the whole edit (`has invalid type "accept.as"`) and changes nothing.
 
 ### Repositories (Diffusion)
 
@@ -396,6 +398,7 @@ Once connected, just ask your AI assistant to perform Phabricator tasks in natur
 - "Review the code changes in D6789"
 - "Add @alice as a reviewer to D6789"
 - "Accept D6789"
+- "Accept D6789 for myself only, not for my team"
 - "Leave an inline comment on line 42 of src/index.ts in D6789"
 - "Suggest an edit for lines 10-12 of src/config.ts in D6789, then publish my review"
 - "Reword my draft inline comment on src/config.ts in D6789, and delete the one on line 12"

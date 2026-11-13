@@ -53,7 +53,7 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
   // Edit revision
   server.tool(
     'phabricator_revision_edit',
-    'Edit a Differential revision. Supports actions like accept, reject, abandon, request-review, plan-changes, and commandeer. Can also add/remove reviewers, subscribers, and comments.',
+    'Edit a Differential revision. Supports actions like accept, reject, abandon, request-review, plan-changes, and commandeer, and accepting for chosen reviewers only (acceptAs). Can also add/remove reviewers, subscribers, and comments.',
     {
       objectIdentifier: z.string().describe('Revision PHID or ID (e.g., "D123")'),
       title: z.string().optional().describe('New title'),
@@ -66,6 +66,9 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
       removeProjectPHIDs: z.array(z.string()).optional().describe('Remove projects'),
       comment: z.string().optional().describe('Add a comment'),
       action: z.enum(['accept', 'reject', 'abandon', 'reclaim', 'reopen', 'request-review', 'resign', 'commandeer', 'plan-changes', 'close']).optional().describe('Revision action to take. Each action is sent as its own transaction type with value true.'),
+      acceptAs: z.array(z.string()).min(1).optional().describe(
+        'Accept on behalf of only these reviewers, as the web UI\'s "Accept as" checkboxes do: ["self"] accepts for you alone and never for a group you belong to; add project or package PHIDs to accept for those too. "self" stands for your own user PHID. Use instead of action "accept", which accepts for every group you belong to; the two cannot be combined. Each PHID must be a reviewer you could tick under "Accept as" in the web UI. Needs Freelancer\'s Phabricator extension (the accept.as transaction); a Phabricator without it refuses the whole edit.',
+      ),
       draft: z.boolean().optional().describe('Hold revision as draft (true) or release from draft (false)'),
       addSubscriberPHIDs: z.array(z.string()).optional().describe('Subscriber PHIDs to add'),
       removeSubscriberPHIDs: z.array(z.string()).optional().describe('Subscriber PHIDs to remove'),
@@ -79,6 +82,10 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
     },
     DESTRUCTIVE,
     async (params) => {
+      if (params.acceptAs !== undefined && params.action !== undefined) {
+        throw new Error('acceptAs cannot be combined with action: Phabricator allows one review action per edit.');
+      }
+
       const transactions: Array<{ type: string; value: unknown }> = [];
 
       if (params.title !== undefined) {
@@ -110,6 +117,16 @@ export function registerDifferentialTools(server: McpServer, client: ConduitClie
       }
       if (params.action !== undefined) {
         transactions.push({ type: params.action, value: true });
+      }
+      if (params.acceptAs !== undefined) {
+        // phlab's accept.as; on a Phabricator without it, the whole edit fails
+        // with "invalid type" and nothing changes.
+        let reviewers = params.acceptAs;
+        if (reviewers.includes('self')) {
+          const viewer = await client.call<{ phid: string }>('user.whoami');
+          reviewers = reviewers.map((phid) => (phid === 'self' ? viewer.phid : phid));
+        }
+        transactions.push({ type: 'accept.as', value: [...new Set(reviewers)] });
       }
       if (params.draft !== undefined) {
         transactions.push({ type: 'draft', value: params.draft });
