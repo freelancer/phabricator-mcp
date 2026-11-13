@@ -64,6 +64,8 @@ export const TOOL_METHODS: Record<string, string[]> = {
   phabricator_document_edit: ['phriction.edit'],
   phabricator_document_add_comment: ['phriction.document.edit'],
 
+  phabricator_herald_transcript_search: ['herald.transcript.search'],
+
   phabricator_phid_lookup: ['phid.lookup'],
   phabricator_phid_query: ['phid.query'],
 
