@@ -237,7 +237,7 @@ The server hides tools that Phabricator cannot serve, such as the Conpherence to
 | Tool | Description |
 |------|-------------|
 | `phabricator_revision_search` | Search code review revisions |
-| `phabricator_revision_edit` | Edit a revision (accept, accept for chosen reviewers only, reject, abandon, add reviewers, comment, etc.) |
+| `phabricator_revision_edit` | Edit a revision (accept or reject, optionally for chosen reviewers only, abandon, add reviewers, comment, etc.) |
 | `phabricator_revision_inline_comment` | Create a draft inline comment on a line or character range, optionally with a suggested edit, or a threaded reply to a published one |
 | `phabricator_revision_inline_search` | List a revision's inline comments with side, range, suggested edit and Done state |
 | `phabricator_revision_inline_publish` | Publish your draft inline comments as one review, like "Submit" in the web UI |
@@ -251,6 +251,8 @@ The server hides tools that Phabricator cannot serve, such as the Conpherence to
 The `phabricator_revision_inline_*` tools call the `differential.inline.*` Conduit methods, which stock Phabricator does not ship. Without them, `phabricator_revision_inline_comment` still creates plain line comments through `differential.createinline`, but those drafts cannot be published through Conduit. Replies (`replyToInlineID`) need a version of the extension that supports them; an older one refuses the call (`does not define these parameters: 'replyToInlineID'`) and creates nothing.
 
 `phabricator_revision_edit`'s `acceptAs` accepts on behalf of only the reviewers listed, as the web UI's "Accept as" checkboxes do: `["self"]` accepts for you alone and never for a group you belong to, and project or package PHIDs add those groups. `action: "accept"` accepts for every group you belong to; the two cannot be combined. `acceptAs` needs Freelancer's Phabricator extension (the `accept.as` transaction); a Phabricator without it refuses the whole edit (`has invalid type "accept.as"`) and changes nothing.
+
+`rejectAs` does the same for requesting changes: `["self"]` requests changes for you alone and leaves every group you belong to as it was, so a bot in a project or package never overwrites a group a person accepted. `action: "reject"` requests changes for every group you belong to. `acceptAs`, `rejectAs` and `action` cannot be combined. `rejectAs` needs the extension's `reject.as` transaction; a Phabricator without it refuses the whole edit (`has invalid type "reject.as"`) and changes nothing.
 
 ### Repositories (Diffusion)
 

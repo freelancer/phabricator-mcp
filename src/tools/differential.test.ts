@@ -172,7 +172,7 @@ describe('phabricator_revision_edit acceptAs', () => {
     );
 
     assert.strictEqual(result.isError, true);
-    assert.match(text, /acceptAs cannot be combined with action/);
+    assert.match(text, /action and acceptAs cannot be combined/);
     assert.deepStrictEqual(calls, []);
   });
 
@@ -195,5 +195,87 @@ describe('phabricator_revision_edit acceptAs', () => {
     );
 
     assert.deepStrictEqual(sent(calls[0]!).transactions, [{ type: 'accept', value: true }]);
+  });
+});
+
+describe('phabricator_revision_edit rejectAs', () => {
+  const edited = { object: { id: 12, phid: 'PHID-DREV-12' }, transactions: [{ phid: 'PHID-XACT-1' }] };
+  const respond = (method: string) => (method === 'user.whoami' ? { phid: 'PHID-USER-me' } : edited);
+
+  it('sends ["self"] as reject.as with the caller\'s own PHID', async () => {
+    const { calls, result, text } = await callTool(
+      'phabricator_revision_edit',
+      { objectIdentifier: 'D12', rejectAs: ['self'] },
+      respond,
+    );
+
+    assert.ok(!result.isError, text);
+    assert.deepStrictEqual(calls.map((call) => call.method), ['user.whoami', 'differential.revision.edit']);
+    assert.deepStrictEqual(sent(calls[1]!), {
+      objectIdentifier: 'D12',
+      transactions: [{ type: 'reject.as', value: ['PHID-USER-me'] }],
+    });
+  });
+
+  it('sends a comment and chosen groups, with self resolved once and no duplicates', async () => {
+    const { calls } = await callTool(
+      'phabricator_revision_edit',
+      { objectIdentifier: 'D12', comment: 'Please add a test.', rejectAs: ['self', 'PHID-PROJ-a', 'PHID-USER-me'] },
+      respond,
+    );
+
+    assert.deepStrictEqual(sent(calls[1]!).transactions, [
+      { type: 'comment', value: 'Please add a test.' },
+      { type: 'reject.as', value: ['PHID-USER-me', 'PHID-PROJ-a'] },
+    ]);
+  });
+
+  it('does not look the caller up when "self" is not used', async () => {
+    const { calls } = await callTool(
+      'phabricator_revision_edit',
+      { objectIdentifier: 'D12', rejectAs: ['PHID-PROJ-a'] },
+      respond,
+    );
+
+    assert.deepStrictEqual(calls.map((call) => call.method), ['differential.revision.edit']);
+    assert.deepStrictEqual(sent(calls[0]!).transactions, [{ type: 'reject.as', value: ['PHID-PROJ-a'] }]);
+  });
+
+  for (const [label, extra, message] of [
+    ['an action', { action: 'reject' }, /action and rejectAs cannot be combined/],
+    ['acceptAs', { acceptAs: ['self'] }, /acceptAs and rejectAs cannot be combined/],
+  ] as const) {
+    it(`refuses rejectAs with ${label} before any call`, async () => {
+      const { calls, result, text } = await callTool(
+        'phabricator_revision_edit',
+        { objectIdentifier: 'D12', rejectAs: ['self'], ...extra },
+        respond,
+      );
+
+      assert.strictEqual(result.isError, true);
+      assert.match(text, message);
+      assert.deepStrictEqual(calls, []);
+    });
+  }
+
+  it('refuses an empty rejectAs before any call', async () => {
+    const { calls, result } = await callTool(
+      'phabricator_revision_edit',
+      { objectIdentifier: 'D12', rejectAs: [] },
+      respond,
+    );
+
+    assert.strictEqual(result.isError, true);
+    assert.deepStrictEqual(calls, []);
+  });
+
+  it('still sends action reject as the boolean transaction', async () => {
+    const { calls } = await callTool(
+      'phabricator_revision_edit',
+      { objectIdentifier: 'D12', action: 'reject' },
+      respond,
+    );
+
+    assert.deepStrictEqual(sent(calls[0]!).transactions, [{ type: 'reject', value: true }]);
   });
 });
