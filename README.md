@@ -201,6 +201,7 @@ Add to your `~/.claude/settings.json`:
       "mcp__phabricator__phabricator_build_log_search",
       "mcp__phabricator__phabricator_build_plan_search",
       "mcp__phabricator__phabricator_owners_search",
+      "mcp__phabricator__phabricator_herald_transcript_search",
       "mcp__phabricator__phabricator_feed_query",
       "mcp__phabricator__phabricator_conpherence_read",
       "mcp__phabricator__phabricator_audit_query",
@@ -344,6 +345,12 @@ The `phabricator_revision_inline_*` tools call the `differential.inline.*` Condu
 | Tool | Description |
 |------|-------------|
 | `phabricator_owners_search` | Search code ownership packages |
+
+### Herald
+
+| Tool | Description |
+|------|-------------|
+| `phabricator_herald_transcript_search` | Read what Herald did to a revision: the rules each run evaluated, which matched, how each condition came out and which actions were applied (needs the `herald.transcript.search` Conduit extension) |
 
 ### Activity Feed
 

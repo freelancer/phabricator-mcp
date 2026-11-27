@@ -16,6 +16,7 @@ import { registerTransactionTools } from './transaction.js';
 import { registerFileTools } from './file.js';
 import { registerHarbormasterTools } from './harbormaster.js';
 import { registerOwnersTools } from './owners.js';
+import { registerHeraldTools } from './herald.js';
 import { registerFeedTools } from './feed.js';
 import { registerConpherenceTools } from './conpherence.js';
 import { registerAuditTools } from './audit.js';
@@ -56,6 +57,7 @@ export function registerAllTools(server: McpServer, client: ConduitClient): Map<
   registerFileTools(tools, client);
   registerHarbormasterTools(tools, client);
   registerOwnersTools(tools, client);
+  registerHeraldTools(tools, client);
   registerFeedTools(tools, client);
   registerConpherenceTools(tools, client);
   registerAuditTools(tools, client);
